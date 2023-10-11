@@ -29,7 +29,15 @@ public class VideosRepository {
     }
 
     public void insert(VideosModel videosModel) {
-        new InsertAsyncTask(addVideosDao).execute(videosModel);
+//        new AsyncTask<Void, Void, Void>() {
+//            @Override
+//            protected Void doInBackground(Void... voids) {
+                Log.d("stringList23:", "Enter" + videosModel.getVideo_path());
+                addVideosDao.insertPhotoLapse(videosModel);
+//                return null;
+//            }
+//        }.execute();
+//        new InsertAsyncTask(addVideosDao).execute(videosModel);
     }
 
     public void update(VideosModel videosModel) {
@@ -101,6 +109,8 @@ public class VideosRepository {
 
         @Override
         protected Void doInBackground(VideosModel... videosModels) {
+
+            Log.d("stringList23:", "Enter" + videosModels[0].getVideo_path());
             addVideosDao.insertPhotoLapse(videosModels[0]);
             return null;
         }

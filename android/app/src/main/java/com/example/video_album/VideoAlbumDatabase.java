@@ -9,6 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
+import com.example.video_album.database.AddFolderNameDao;
 import com.example.video_album.database.AddVideosDao;
 import com.example.video_album.database.Album;
 import com.example.video_album.database.AlbumListDao;
@@ -18,7 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-@Database(entities = {Album.class, VideosModel.class}, version = 1,
+@Database(entities = {Album.class, VideosModel.class, FolderName.class}, version = 1,
         exportSchema = false)
 public abstract class VideoAlbumDatabase extends RoomDatabase {
 
@@ -29,7 +30,7 @@ public abstract class VideoAlbumDatabase extends RoomDatabase {
     public abstract AlbumListDao albumListDao();
     public abstract AddVideosDao addVideosDao();
 
-//    public abstract AddFolderNameDao addFolderNameDao();
+    public abstract AddFolderNameDao addFolderNameDao();
 //
 //    public abstract SchedulerDao schedulerDao();
 

@@ -1,5 +1,6 @@
 package com.example.video_album;
 
+import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,6 +16,8 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,9 +31,10 @@ public class MyWallpaperService extends WallpaperService {
     public static final String VIDEO_PARAMS_CONTROL_ACTION = BuildConfig.APPLICATION_ID;
     public static final String RANDOM_PARAMS_CONTROL_ACTION = "random_video_data";
     public static List<String> arrayList = new ArrayList<>();
-    public static List<VideosModel> modelList = new ArrayList<>();
-    MySharedPreference mySharedPreference;
-    BroadcastReceiver broadcastReceiver3;
+    public List<VideosModel> modelList = new ArrayList<>();
+
+    FolderNameRepository folderNameRepository;
+    String folderName;
     VideosRepository repository;
 
     @Override
@@ -41,21 +45,31 @@ public class MyWallpaperService extends WallpaperService {
     public class VideoEngine extends Engine { // Implement OnSharedPreferenceChangeListener
         ExoPlayer exoPlayer;
 
+        public VideoEngine() {
+            super();
+            Log.d("folderName:", "VideoEngine");
+        }
+
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
+            Log.d("VideoEngine:", "onCreate");
+            folderNameRepository = new FolderNameRepository(getApplication());
+            folderName = folderNameRepository.getList().get(0).getFolder_name();
+
+
             repository = new VideosRepository(getApplication());
             exoPlayer = new ExoPlayer.Builder(getApplicationContext()).setVideoScalingMode(2).build();
             exoPlayer2 = exoPlayer;
-            // Register the SharedPreferences listener
-//            SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
-//            sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-            modelList = repository.getVideosData("hh");
-            Log.e("modelsize:", "" + modelList.size());
-            mySharedPreference = MySharedPreference.getPreferences(getApplicationContext());
-            mySharedPreference.setFirstTimeVideo(true);
 
-            IntentFilter intentFilter3 = new IntentFilter("CHANGE_WALLPAPER");
+            Log.d("folderName:", "name--> " + folderName);
+
+
+            modelList = repository.getVideosData(folderName);
+
+            Log.e("modelsize:", "" + modelList.size());
+
+           /* IntentFilter intentFilter3 = new IntentFilter("CHANGE_WALLPAPER");
             intentFilter3.addAction("AddVideos");
 
             broadcastReceiver3 = new BroadcastReceiver() {
@@ -87,46 +101,48 @@ public class MyWallpaperService extends WallpaperService {
 //                    }
                 }
             };
-            registerReceiver(broadcastReceiver3, intentFilter3);
+            registerReceiver(broadcastReceiver3, intentFilter3);*/
 
 
-//            String delimitedString = mySharedPreference.getVideoPath();
-//            String[] stringArray = delimitedString.split(",");
-//            arrayList.addAll(Arrays.asList(stringArray));
-//            Log.e("dataa:", "" + arrayList.get(0));
+        }
 
-            if (mySharedPreference.getVideoSound()) {
-                exoPlayer.setVolume(1.0f);
-            } else {
-                exoPlayer.setVolume(0.0f);
-            }
+        @Override
+        public void onSurfaceCreated(SurfaceHolder holder) {
+            super.onSurfaceCreated(holder);
 
-//            if (mySharedPreference.getRandomVideo()) {
-//                playRandomVideoWallPaper(arrayList);
-//            }
-
-
+            modelList = repository.getVideosData(folderName);
+            Log.e("VideoExist:", "onSurfaceCreated"+modelList.size());
             for (int i = 0; i < modelList.size(); i++) {
                 String path = modelList.get(i).getVideo_path();
-                Log.e("videoPatha:::", "First Time --> " + path);
+                Log.e(" ", "First Time --> " + path);
                 MediaItem mediaItem = MediaItem.fromUri(path);
                 exoPlayer.addMediaItem(mediaItem);
             }
 
+//            playAutoVideoWallPaper(modelList);
+
+
             exoPlayer.setRepeatMode(Player.REPEAT_MODE_ALL);
-            exoPlayer.setVideoSurface(surfaceHolder.getSurface());
+            exoPlayer.setVideoSurface(holder.getSurface());
             exoPlayer.prepare();
             exoPlayer.play();
         }
 
-        private void playAutoVideoWallPaper(String arrayList) {
+        private void playAutoVideoWallPaper(List<VideosModel> arrayList) {
 //            valSizeOfArray = 0;
-            for (int i = 0; i < (MyWallpaperService.this.arrayList.size()); i++) {
-                String path = MyWallpaperService.this.arrayList.get(i);
-                Log.e("dbPath:", "auto --> " + path);
-                MediaItem mediaItem = MediaItem.fromUri(arrayList);
-                exoPlayer.addMediaItem(mediaItem);
-//                valSizeOfArray++;
+            for (int i = 0; i < arrayList.size(); i++) {
+
+                String path = arrayList.get(i).getVideo_path();
+                File file = new File(path);
+                if (file.exists()) {
+                    Log.e("videoPath:", "Auto Video Path--> " + path);
+                    MediaItem mediaItem = MediaItem.fromUri(path);
+                    exoPlayer2.addMediaItem(mediaItem);
+//                    valSizeOfArray++;
+                } else {
+                    Log.e("VideoExist:", "is Not Exist");
+                }
+
             }
         }
 
@@ -155,9 +171,9 @@ public class MyWallpaperService extends WallpaperService {
         public void onVisibilityChanged(boolean visible) {
             if (visible) {
                 exoPlayer.play();
-            } else {
-                exoPlayer.pause();
+                return;
             }
+            exoPlayer.pause();
         }
 
         @Override
@@ -180,7 +196,8 @@ public class MyWallpaperService extends WallpaperService {
                 exoPlayer.release();
             }
             this.exoPlayer = null;
-            MyWallpaperService.this.unregisterReceiver(broadcastReceiver3);
+//            MyWallpaperService.this.unregisterReceiver(broadcastReceiver3);
+
         }
     }
 
@@ -220,13 +237,23 @@ public class MyWallpaperService extends WallpaperService {
 //    }
 //
 
+
     public static void setToWallPaper(Context context) {
 
         // Set the live wallpaper
+//        Intent it = new Intent("android.service.wallpaper.CHANGE_LIVE_WALLPAPER");
+//        it.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT", new ComponentName(context, MyWallpaperService.class));
+//        it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        context.startActivity(it);
         Intent it = new Intent("android.service.wallpaper.CHANGE_LIVE_WALLPAPER");
         it.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT", new ComponentName(context, MyWallpaperService.class));
         it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(it);
-
+        try {
+            WallpaperManager.getInstance(context).clear();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

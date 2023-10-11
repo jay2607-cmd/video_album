@@ -14,6 +14,7 @@ import com.example.video_album.database.Album;
 import com.example.video_album.database.AlbumListRepository;
 import com.example.video_album.database.AlbumListViewModel;
 import com.example.video_album.database.VideosModel;
+import com.example.video_album.database.VideosRepository;
 import com.example.video_album.database.VideosViewModel;
 
 import java.util.ArrayList;
@@ -34,7 +35,8 @@ public class MainActivity extends FlutterActivity {
 
     MySharedPreference mySharedPreference;
     AlbumListRepository viewModel;
-    VideosViewModel videosViewModel;
+    FolderNameRepository folderNameRepository;
+    VideosRepository videosViewModel;
 
     String category;
 
@@ -44,7 +46,8 @@ public class MainActivity extends FlutterActivity {
         super.configureFlutterEngine(flutterEngine);
         Log.e("check", "configureFlutterEngine");
         viewModel = new AlbumListRepository(getApplication());
-        videosViewModel = new VideosViewModel(getApplication());
+        videosViewModel = new VideosRepository(getApplication());
+        folderNameRepository = new FolderNameRepository(getApplication());
         MethodChannel channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL_NAME);
 
         mySharedPreference = MySharedPreference.getPreferences(getApplicationContext());
@@ -89,7 +92,7 @@ public class MainActivity extends FlutterActivity {
                     }
                 }
 
-                if (call.method.equals("addNew")) {
+                /*if (call.method.equals("addNew")) {
                     stringList = call.argument("stringList");
                     StringBuilder message = new StringBuilder("Selected Videos:\n");
 
@@ -99,15 +102,27 @@ public class MainActivity extends FlutterActivity {
                     Log.d("addNew:", "Enter" + stringList.get(0));
 
                     NewVideoWP(getApplicationContext(), stringList.get(0));
-                }
+                }*/
 
                 if (call.method.equals("albumName")) {
 
+                    category = call.argument("category");
+
                     Log.d("categorya:", "Enter" + category);
 
-                    createMainDirectory(category);
+                    if (VideoAlbumDatabase.getInstance(getApplicationContext()).addFolderNameDao().isDataExist() == 0) {
+                        FolderName notify = new FolderName();
+                        notify.setFolder_name(category);
+                        folderNameRepository.insert(notify);
+                    } else {
+                        FolderName notify = new FolderName();
+                        notify.setFolder_id(1);
+                        notify.setFolder_name(category);
+                        folderNameRepository.update(notify);
+                    }
 
-                    setToWallPaper(getApplicationContext());
+                    createMainDirectory(category);
+                    MyWallpaperService.setToWallPaper(getApplicationContext());
                 }
 
                 if (call.method.equals("addPath")) {
@@ -115,8 +130,8 @@ public class MainActivity extends FlutterActivity {
                     List<String> stringList2 = call.argument("stringListArgument");
                     category = call.argument("albumName");
 
-
-                    Log.d("stringList2:", "Enter" + stringList2.get(0));
+//                    Log.d("stringList2:", "Enter" + stringList2.get(0));
+//                    Log.d("stringList23:", "Enter" + stringList2.get(1));
 
                     if (stringList2 != null) {
                         addData(category, stringList2);
@@ -130,7 +145,9 @@ public class MainActivity extends FlutterActivity {
 
     private void addData(String dir, List<String> pathListFromFlutter) {
         VideosModel videosModel = new VideosModel();
+
         for (int i = 0; i < pathListFromFlutter.size(); i++) {
+
             videosModel.setAlbum_name(dir);
             videosModel.setVideo_path(pathListFromFlutter.get(i));
             videosViewModel.insert(videosModel);
@@ -147,8 +164,19 @@ public class MainActivity extends FlutterActivity {
         } else {
             Toast.makeText(this, "This name is already in the list please " +
                     "give another name of Album", Toast.LENGTH_SHORT).show();
-
-
+//            if (VideoAlbumDatabase.getInstance(getApplicationContext()).addFolderNameDao().isDataExist() == 0) {
+//                FolderName notify = new FolderName();
+//                notify.setFolder_name(category);
+//                folderNameRepository.insert(notify);
+//            } else {
+//                FolderName notify = new FolderName();
+//                notify.setFolder_id(1);
+//                notify.setFolder_name(category);
+//                folderNameRepository.update(notify);
+//            }
+//
+//            createMainDirectory(category);
+//            setToWallPaper(getApplicationContext());
         }
 
     }
