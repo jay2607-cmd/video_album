@@ -48,9 +48,30 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
       if (result != null) {
         List<PlatformFile> files = result.files;
 
+
         setState(() {
-          _selectedFilePaths = files.map((file) => file.path ?? "").toList();
+          List<String> newItemData = [];
+          // _selectedFilePaths.clear();
+          // _selectedFilePaths = [];
+          _selectedFilePaths = listBox?.get(widget.albumName) ?? [];
+
+          for (var file in files) {
+            String? filePath = file.path;
+            if (filePath != null) {
+              if (!_selectedFilePaths.contains(filePath)) {
+                newItemData.add(filePath);
+              }
+              // listBox?.put(widget.albumName, newItemData);
+            }
+          }
+          _selectedFilePaths.addAll(newItemData);
+          print("_selectedFileSize ${_selectedFilePaths.length}");
+          listBox?.put(widget.albumName, _selectedFilePaths);
+          saveListToDatabase(newItemData);
         });
+
+
+
       } else {
         // User canceled the file picker
       }
@@ -96,24 +117,15 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
 
   }*/
 
-  void saveListToDatabase() async {
-    // Retrieve the existing list from Hive or initialize it if it doesn't exist
-    final existingList = listBox?.get(widget.albumName) ?? [];
-
-    // Add the newly selected video paths to the existing list
-    existingList.addAll(_selectedFilePaths);
-
-    print("widget.albumName ${existingList.length}");
-
-    // Save the updated list back to Hive
-    await listBox?.put(widget.albumName, existingList);
+  void saveListToDatabase(List<String> newItemData) async {
 
     channel.invokeMethod("addPath", {
       "albumName": widget.albumName,
-      "stringListArgument": existingList,
+      "stringListArgument": newItemData,
     });
 
     setState(() {});
+
   }
 
   var data;
@@ -153,11 +165,6 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
                 },
               ),
             ),
-            ElevatedButton(
-                onPressed: () {
-                  saveListToDatabase();
-                },
-                child: Text("Done"))
           ],
         ),
       ),

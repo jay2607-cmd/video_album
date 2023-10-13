@@ -110,8 +110,8 @@ public class VideosRepository {
         @Override
         protected Void doInBackground(VideosModel... videosModels) {
 
-            Log.d("stringList23:", "Enter" + videosModels[0].getVideo_path());
-            addVideosDao.insertPhotoLapse(videosModels[0]);
+//            Log.d("`stringList23`:", "Enter" + videosModels[0].getVideo_path());
+//            addVideosDao.insertPhotoLapse(videosModels[0]);
             return null;
         }
     }

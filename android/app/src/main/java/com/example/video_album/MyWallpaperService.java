@@ -60,7 +60,7 @@ public class MyWallpaperService extends WallpaperService {
 
             repository = new VideosRepository(getApplication());
             exoPlayer = new ExoPlayer.Builder(getApplicationContext()).setVideoScalingMode(2).build();
-            exoPlayer2 = exoPlayer;
+//            exoPlayer2 = exoPlayer;
 
             Log.d("folderName:", "name--> " + folderName);
 
@@ -110,11 +110,10 @@ public class MyWallpaperService extends WallpaperService {
         public void onSurfaceCreated(SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
 
-            modelList = repository.getVideosData(folderName);
             Log.e("VideoExist:", "onSurfaceCreated"+modelList.size());
             for (int i = 0; i < modelList.size(); i++) {
                 String path = modelList.get(i).getVideo_path();
-                Log.e(" ", "First Time --> " + path);
+                Log.e("videoPath:", "First Time --> " + path);
                 MediaItem mediaItem = MediaItem.fromUri(path);
                 exoPlayer.addMediaItem(mediaItem);
             }
