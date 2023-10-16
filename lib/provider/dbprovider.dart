@@ -9,10 +9,28 @@ class DbProvider {
   final Future<SharedPreferences> _hideCreationDate =
       SharedPreferences.getInstance();
 
+  final Future<SharedPreferences> _doubleTap = SharedPreferences.getInstance();
+
   final Future<SharedPreferences> _hideEmptyCategoriesPref =
       SharedPreferences.getInstance();
 
+  // for hide the creation date
+  void saveDoubleTap(bool status) async {
+    final instance = await _doubleTap;
 
+    instance.setBool("hideCreationDate", status);
+  }
+
+  // for hide the creation date
+  Future<bool> getDoubleTap() async {
+    final instance = await _doubleTap;
+    if (instance.containsKey("hideCreationDate")) {
+      final value = instance.getBool("hideCreationDate");
+      return value!;
+    } else {
+      return false;
+    }
+  }
 
   // for authentication setting
   void saveAuthState(bool status) async {
@@ -67,6 +85,7 @@ class DbProvider {
       return false;
     }
   }
+
   // for hide the empty category
   void saveEmptyCategories(bool status) async {
     final instance = await _hideEmptyCategoriesPref;

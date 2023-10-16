@@ -130,6 +130,7 @@ public class MainActivity extends FlutterActivity {
                     List<String> stringList2 = call.argument("stringListArgument");
                     category = call.argument("albumName");
 
+
 //                    Log.d("stringList2:", "Enter" + stringList2.get(0));
 //                    Log.d("stringList23:", "Enter" + stringList2.get(1));
 
@@ -137,6 +138,12 @@ public class MainActivity extends FlutterActivity {
                         addData(category, stringList2);
                     }
 
+                }
+
+                if(call.method.equals("deletePath")) {
+                    String albumName = call.argument("albumName");
+                    String path = call.argument("videoPath");
+                    deleteData(path,albumName);
                 }
             }
 
@@ -155,28 +162,36 @@ public class MainActivity extends FlutterActivity {
 //        setToWallPaper(getApplicationContext());
     }
 
+    private  void deleteData(String path, String albumName) {
+        VideosModel videosModel = new VideosModel();
+        Log.e("dataa:"," "+path+" Name: "+albumName);
+//        videosModel.getAlbum_name();
+        videosViewModel.deleteData(path,albumName);
+    }
+
     private void createMainDirectory(String dir) {
         if (VideoAlbumDatabase.getInstance(this).albumListDao().isDataExist(dir) == 0) {
             Album notify = new Album();
             notify.setAlbum_name(dir);
             viewModel.insert(notify);
-            Toast.makeText(this, "inserted", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "inserted", Toast.LENGTH_SHORT).show();
         } else {
+            /*
             Toast.makeText(this, "This name is already in the list please " +
                     "give another name of Album", Toast.LENGTH_SHORT).show();
-//            if (VideoAlbumDatabase.getInstance(getApplicationContext()).addFolderNameDao().isDataExist() == 0) {
-//                FolderName notify = new FolderName();
-//                notify.setFolder_name(category);
-//                folderNameRepository.insert(notify);
-//            } else {
-//                FolderName notify = new FolderName();
-//                notify.setFolder_id(1);
-//                notify.setFolder_name(category);
-//                folderNameRepository.update(notify);
-//            }
-//
-//            createMainDirectory(category);
-//            setToWallPaper(getApplicationContext());
+            if (VideoAlbumDatabase.getInstance(getApplicationContext()).addFolderNameDao().isDataExist() == 0) {
+                FolderName notify = new FolderName();
+                notify.setFolder_name(category);
+                folderNameRepository.insert(notify);
+            } else {
+                FolderName notify = new FolderName();
+                notify.setFolder_id(1);
+                notify.setFolder_name(category);
+                folderNameRepository.update(notify);
+            }
+
+            createMainDirectory(category);
+            setToWallPaper(getApplicationContext());*/
         }
 
     }

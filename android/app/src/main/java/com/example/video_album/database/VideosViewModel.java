@@ -41,8 +41,8 @@ public class VideosViewModel extends AndroidViewModel {
         repository.deleteAllData();
     }
 
-    public void deleteData(String path) {
-        repository.deleteData(path);
+    public void deleteData(String path, String albumName) {
+        repository.deleteData(path, albumName);
     }
 
     public void deleteVideo(int id) {
@@ -50,7 +50,7 @@ public class VideosViewModel extends AndroidViewModel {
     }
 
     public VideosModel fetchData(int id) {
-      return  repository.fetchData(id);
+        return repository.fetchData(id);
     }
 
 

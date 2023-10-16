@@ -40,8 +40,8 @@ public interface AddVideosDao {
     @Delete
     void deleteData(List<VideosModel> favourite);
 
-    @Query("DELETE FROM tbl_videos WHERE video_path =:path")
-    void deleteData(String path);
+    @Query("DELETE FROM tbl_videos WHERE video_path =:path AND album_name =:albumName")
+    void deleteData(String path,String albumName);
 
     @Query("DELETE FROM tbl_videos")
     void deleteAllData();

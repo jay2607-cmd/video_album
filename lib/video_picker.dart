@@ -8,6 +8,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:video_album/boxes/boxes.dart';
 import 'package:video_album/database/save.dart';
 import 'package:video_album/provider/dbprovider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class VideoPicker extends StatefulWidget {
   final String albumName;
@@ -16,27 +17,23 @@ class VideoPicker extends StatefulWidget {
 
   @override
   State<VideoPicker> createState() => _VideoPickerState();
+
 }
 
 class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
-  var channel = MethodChannel("nativeDemo");
-
-/*
-  showToast() {
-    channel.invokeMethod("showToast", {
-      "stringList": _selectedFiles.map((file) => file.path).toList(),
-      "booleanValue": isRandom, // Replace with your boolean value
-    });
-  }
-
-  addNew() {
-    channel.invokeMethod("addNew", {
-      "stringList": _selectedFiles.map((file) => file.path).toList(),
-    });
-  }
-*/
+  var channel = const MethodChannel("nativeDemo");
 
   List<String> _selectedFilePaths = []; // Store file paths
+
+  Future<Uint8List?> _generateVideoThumbnail(String videoPath) async {
+    final uint8List = await VideoThumbnail.thumbnailData(
+      video: videoPath,
+      imageFormat: ImageFormat.PNG,
+      maxWidth: 200,
+      quality: 25,
+    );
+    return uint8List;
+  }
 
   Future<void> _pickVideos() async {
     try {
@@ -48,11 +45,8 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
       if (result != null) {
         List<PlatformFile> files = result.files;
 
-
         setState(() {
           List<String> newItemData = [];
-          // _selectedFilePaths.clear();
-          // _selectedFilePaths = [];
           _selectedFilePaths = listBox?.get(widget.albumName) ?? [];
 
           for (var file in files) {
@@ -69,9 +63,6 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
           listBox?.put(widget.albumName, _selectedFilePaths);
           saveListToDatabase(newItemData);
         });
-
-
-
       } else {
         // User canceled the file picker
       }
@@ -104,31 +95,41 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
 
   List<String> dbList = [];
 
-  /* void saveListToDatabase() async {
-
-    for (int i = 0; i < _selectedFilePaths.length; i++) {
-      dbList.add(_selectedFilePaths[i]);
-    }
-
-    print("widget.albumName ${dbList.length}");
-
-    await listBox.put(widget.albumName, dbList);
-
-
-  }*/
-
   void saveListToDatabase(List<String> newItemData) async {
-
     channel.invokeMethod("addPath", {
       "albumName": widget.albumName,
       "stringListArgument": newItemData,
+
+    });
+
+    setState(() {});
+  }
+
+  void _deleteVideo(int index, String videoPath) {
+    // Remove the item from the database
+    List<String> updatedList = listBox?.get(widget.albumName) ?? [];
+
+    // Remove the item from the UI by updating the state
+    updatedList.removeAt(index);
+
+    updatedList.remove(videoPath);
+    listBox?.put(widget.albumName, updatedList);
+
+
+    // remove path from native side as well
+    channel.invokeMethod("deletePath", {
+      "albumName": widget.albumName,
+      "videoPath": videoPath,
     });
 
     setState(() {});
 
-  }
+    // Additionally, you can delete the video file from storage if needed
+    // File(videoPath).deleteSync();
 
-  var data;
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,11 +155,72 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
                   return ListView.builder(
                     itemCount: dbList.length,
                     itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(
-                          dbList.isEmpty ? "0" : dbList[index].toString(),
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                      String videoPath = dbList[index];
+                      return FutureBuilder(
+                        future: _generateVideoThumbnail(videoPath),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                                  ConnectionState.done &&
+                              snapshot.data != null) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListTile(
+                                title: Text(
+                                  dbList.isEmpty
+                                      ? "0"
+                                      : dbList[index]
+                                          .toString()
+                                          .split("/")
+                                          .last,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                leading: Container(
+                                  width: 100, // Set the desired width
+                                  height: 100, // Set the desired height
+                                  child: Center(
+                                    child: Image.memory(
+                                        snapshot.data ?? Uint8List(0)),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () {
+                                    print("indexi $index");
+                                    _deleteVideo(index, videoPath);
+                                  },
+                                ),
+                              ),
+                            );
+                          } else {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListTile(
+                                title: Text(
+                                  dbList.isEmpty
+                                      ? "0"
+                                      : dbList[index]
+                                          .toString()
+                                          .split("/")
+                                          .last,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                leading: Container(
+                                  width: 100, // Set the desired width
+                                  height: 100, // Set the desired height
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () {
+                                    _deleteVideo(index, videoPath);
+                                  },
+                                ),
+                              ),
+                            );
+                          }
+                        },
                       );
                     },
                   );

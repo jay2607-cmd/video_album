@@ -82,11 +82,11 @@ public class VideosRepository {
         });
     }
 
-    public void deleteData(String path) {
+    public void deleteData(String path,String albumName) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
-                addVideosDao.deleteData(path);
+                addVideosDao.deleteData(path,albumName);
                 return null;
             }
         }.execute();
