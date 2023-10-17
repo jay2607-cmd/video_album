@@ -6,31 +6,13 @@ class DbProvider {
 
   final Future<SharedPreferences> _prefRandom = SharedPreferences.getInstance();
 
-  final Future<SharedPreferences> _hideCreationDate =
+  final Future<SharedPreferences> _doubleTap =
       SharedPreferences.getInstance();
-
-  final Future<SharedPreferences> _doubleTap = SharedPreferences.getInstance();
 
   final Future<SharedPreferences> _hideEmptyCategoriesPref =
       SharedPreferences.getInstance();
 
-  // for hide the creation date
-  void saveDoubleTap(bool status) async {
-    final instance = await _doubleTap;
 
-    instance.setBool("hideCreationDate", status);
-  }
-
-  // for hide the creation date
-  Future<bool> getDoubleTap() async {
-    final instance = await _doubleTap;
-    if (instance.containsKey("hideCreationDate")) {
-      final value = instance.getBool("hideCreationDate");
-      return value!;
-    } else {
-      return false;
-    }
-  }
 
   // for authentication setting
   void saveAuthState(bool status) async {
@@ -40,6 +22,7 @@ class DbProvider {
   }
 
   // for authentication setting
+  // have to add settings
   Future<bool> getAuthState() async {
     final instance = await _passcodeAuthentication;
     if (instance.containsKey("status")) {
@@ -69,15 +52,15 @@ class DbProvider {
   }
 
   // for hide the creation date
-  void saveHideCreationDateStatus(bool status) async {
-    final instance = await _hideCreationDate;
+  void saveDoubleTap(bool status) async {
+    final instance = await _doubleTap;
 
     instance.setBool("hideCreationDate", status);
   }
 
   // for hide the creation date
-  Future<bool> getHideCreationDateStatus() async {
-    final instance = await _hideCreationDate;
+  Future<bool> getDoubleTap() async {
+    final instance = await _doubleTap;
     if (instance.containsKey("hideCreationDate")) {
       final value = instance.getBool("hideCreationDate");
       return value!;

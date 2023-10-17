@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:video_album/provider/db_provider.dart';
 import 'package:video_album/video_picker.dart';
 
 import 'boxes/boxes.dart';
@@ -23,11 +24,9 @@ class _AlbumPageState extends State<AlbumPage> {
 
   var listBox;
 
-
   List<String> dbList = [];
 
   List<String> _selectedFilePaths = []; // Store file paths
-
 
   /* void saveListToDatabase() async {
 
@@ -57,11 +56,32 @@ class _AlbumPageState extends State<AlbumPage> {
     setState(() {});
   }
 
+  bool? isRandom;
+  var isDoubleTapEnabled;
+
   @override
   void initState() {
-    super.initState();
     // addCategory();
+
+    DbProvider().getRandomState().then((value) {
+      setState(() {
+        isRandom = value;
+      });
+    });
+
+    DbProvider().getDoubleTap().then((value) {
+      setState(() {
+        isDoubleTapEnabled = value;
+      });
+    });
+
+    print("isDoubleTapEnabled $isDoubleTapEnabled");
+
+    print("value $isRandom");
+
     loadListData();
+    super.initState();
+
   }
 
   loadListData() async {
@@ -143,20 +163,15 @@ class _AlbumPageState extends State<AlbumPage> {
   }
 
   albumName(String album) {
-
     print("categoryController.text ${categoryController.text}");
     channel.invokeMethod("albumName", {
       "category": album,
-
     });
 
     print("$album album");
-
   }
 
-  var album ;
-
-
+  var album;
 
   @override
   Widget build(BuildContext context) {
@@ -184,8 +199,8 @@ class _AlbumPageState extends State<AlbumPage> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => VideoPicker(
-                                albumName: data[index].name,
-                              )));
+                                    albumName: data[index].name,
+                                  )));
                     },
                     child: Card(
                       color: Color(0xffF6F7F8),
@@ -205,9 +220,11 @@ class _AlbumPageState extends State<AlbumPage> {
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
-                                    ElevatedButton(onPressed: () {
-                                      albumName(data[index].name);
-                                    }, child: Text("Set"))
+                                    ElevatedButton(
+                                        onPressed: () {
+                                          albumName(data[index].name);
+                                        },
+                                        child: Text("Set"))
 
                                     /* Text(
                                       listBox == null
@@ -238,7 +255,7 @@ class _AlbumPageState extends State<AlbumPage> {
                                       return AlertDialog(
                                         title: const Text('Warning!',
                                             style:
-                                            TextStyle(color: Colors.red)),
+                                                TextStyle(color: Colors.red)),
                                         content: const Text(
                                             'Do you really want to delete this Category!'),
                                         actions: [

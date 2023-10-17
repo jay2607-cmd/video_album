@@ -7,8 +7,6 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 
 import com.example.video_album.database.Album;
 import com.example.video_album.database.AlbumListRepository;
@@ -32,6 +30,9 @@ public class MainActivity extends FlutterActivity {
     private static final String CHANNEL_NAME = "nativeDemo";
     List<String> stringList = new ArrayList<>();
     boolean isRandom;
+
+    // just update this value as per user option
+    public static boolean isUnMuted = true;
 
     MySharedPreference mySharedPreference;
     AlbumListRepository viewModel;

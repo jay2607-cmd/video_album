@@ -1,5 +1,7 @@
 package com.example.video_album;
 
+import static com.example.video_album.MainActivity.isUnMuted;
+
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -8,6 +10,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 import com.example.video_album.database.VideosModel;
@@ -36,9 +40,16 @@ public class MyWallpaperService extends WallpaperService {
     FolderNameRepository folderNameRepository;
     String folderName;
     VideosRepository repository;
+    GestureDetector gestureDetector;
+
 
     @Override
+
+
     public Engine onCreateEngine() {
+        Log.d("DoubleTapertg:", "Tapped at");
+
+        gestureDetector = new GestureDetector(MyWallpaperService.this, new GestureListener());
         return new VideoEngine();
     }
 
@@ -50,9 +61,12 @@ public class MyWallpaperService extends WallpaperService {
             Log.d("folderName:", "VideoEngine");
         }
 
+
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
+
             super.onCreate(surfaceHolder);
+
             Log.d("VideoEngine:", "onCreate");
             folderNameRepository = new FolderNameRepository(getApplication());
             folderName = folderNameRepository.getList().get(0).getFolder_name();
@@ -64,10 +78,13 @@ public class MyWallpaperService extends WallpaperService {
 
             Log.d("folderName:", "name--> " + folderName);
 
-
             modelList = repository.getVideosData(folderName);
 
             Log.e("modelsize:", "" + modelList.size());
+
+
+            //todo: put condition that isRandom true or not??
+            playRandomVideoWallPaper(modelList);
 
            /* IntentFilter intentFilter3 = new IntentFilter("CHANGE_WALLPAPER");
             intentFilter3.addAction("AddVideos");
@@ -110,7 +127,18 @@ public class MyWallpaperService extends WallpaperService {
         public void onSurfaceCreated(SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
 
-            Log.e("VideoExist:", "onSurfaceCreated"+modelList.size());
+            Log.e("CheckData:", "onSurfaceCreated");
+
+            //todo: get data from flutter side
+            if (isUnMuted) {
+                exoPlayer.setVolume(0.0f);
+
+            } else {
+                exoPlayer.setVolume(1.0f);
+            }
+
+
+            Log.e("VideoExist:", "onSurfaceCreated" + modelList.size());
             for (int i = 0; i < modelList.size(); i++) {
                 String path = modelList.get(i).getVideo_path();
                 Log.e("videoPath:", "First Time --> " + path);
@@ -127,11 +155,11 @@ public class MyWallpaperService extends WallpaperService {
             exoPlayer.play();
         }
 
-        private void playAutoVideoWallPaper(List<VideosModel> arrayList) {
+        private void playAutoVideoWallPaper(List<VideosModel> modelList) {
 //            valSizeOfArray = 0;
-            for (int i = 0; i < arrayList.size(); i++) {
+            for (int i = 0; i < modelList.size(); i++) {
 
-                String path = arrayList.get(i).getVideo_path();
+                String path = modelList.get(i).getVideo_path();
                 File file = new File(path);
                 if (file.exists()) {
                     Log.e("videoPath:", "Auto Video Path--> " + path);
@@ -145,14 +173,17 @@ public class MyWallpaperService extends WallpaperService {
             }
         }
 
-        public void playRandomVideoWallPaper(List<String> arrayList) {
+        int valSizeOfArray;
+
+        public void playRandomVideoWallPaper(List<VideosModel> arrayList) {
             int valSizeOfArray = 0;
             Random rand = new Random();
             String path = "";
             int upperbound = arrayList.size();
             for (int i = 0; i < (arrayList.size() * 2); i++) {
                 int int_random = rand.nextInt(upperbound);
-                path = arrayList.get(int_random);
+
+                path = arrayList.get(int_random).getVideo_path();
                 MediaItem mediaItem = MediaItem.fromUri(path);
                 if (exoPlayer.hasPreviousMediaItem()) {
                     if (!exoPlayer.getMediaItemAt(exoPlayer.getPreviousMediaItemIndex()).equals(mediaItem)) {
@@ -164,41 +195,84 @@ public class MyWallpaperService extends WallpaperService {
                     valSizeOfArray++;
                 }
             }
+
+    }
+
+    @Override
+    public void onVisibilityChanged(boolean visible) {
+        if (visible) {
+            exoPlayer.play();
+            return;
         }
+        exoPlayer.pause();
+    }
 
-        @Override
-        public void onVisibilityChanged(boolean visible) {
-            if (visible) {
-                exoPlayer.play();
-                return;
-            }
-            exoPlayer.pause();
+    @Override
+    public void onSurfaceDestroyed(SurfaceHolder holder) {
+        super.onSurfaceDestroyed(holder);
+        if (exoPlayer.isPlaying()) {
+            exoPlayer.stop();
         }
-
-        @Override
-        public void onSurfaceDestroyed(SurfaceHolder holder) {
-            super.onSurfaceDestroyed(holder);
-            if (exoPlayer.isPlaying()) {
-                exoPlayer.stop();
-            }
-            if (exoPlayer != null) {
-                exoPlayer.release();
-            }
-            exoPlayer = null;
+        if (exoPlayer != null) {
+            exoPlayer.release();
         }
+        exoPlayer = null;
+    }
 
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
 
-            if (exoPlayer != null) {
-                exoPlayer.release();
-            }
-            this.exoPlayer = null;
+        if (exoPlayer != null) {
+            exoPlayer.release();
+        }
+        this.exoPlayer = null;
 //            MyWallpaperService.this.unregisterReceiver(broadcastReceiver3);
 
-        }
     }
+
+    @Override
+    public void onTouchEvent(MotionEvent event) {
+        gestureDetector.onTouchEvent(event);
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_DOWN:
+//                    touchDownMs = System.currentTimeMillis();
+//                    break;
+//                case MotionEvent.ACTION_UP:
+//                    handler.removeCallbacksAndMessages(null);
+//
+//                    if ((System.currentTimeMillis() - touchDownMs) > ViewConfiguration.getTapTimeout()) {
+//                        //it was not a tap
+//
+//                        numberOfTaps = 0;
+//                        lastTapTimeMs = 0;
+//                        break;
+//                    }
+//
+//                    if (numberOfTaps > 0
+//                            && (System.currentTimeMillis() - lastTapTimeMs) < ViewConfiguration.getDoubleTapTimeout()) {
+//                        numberOfTaps += 1;
+//                    } else {
+//                        numberOfTaps = 1;
+//                    }
+//
+//                    lastTapTimeMs = System.currentTimeMillis();
+//
+//                    if (numberOfTaps == 3) {
+//                        Toast.makeText(getApplicationContext(), "triple", Toast.LENGTH_SHORT).show();
+//                        //handle triple tap
+//                    } else if (numberOfTaps == 2) {
+//                        handler.postDelayed(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                //handle double tap
+//                                Toast.makeText(getApplicationContext(), "double", Toast.LENGTH_SHORT).show();
+//                            }
+//                        }, ViewConfiguration.getDoubleTapTimeout());
+//                    }
+//            }
+    }
+}
 
     // Rest of your MyWallpaperService class...
     public static void muteMusic(Context context) {
@@ -235,6 +309,38 @@ public class MyWallpaperService extends WallpaperService {
 //        return super.stopService(name);
 //    }
 //
+
+private class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return true;
+    }
+
+    // event when double tap occurs
+    @Override
+    public boolean onDoubleTap(MotionEvent e) {
+        float x = e.getX();
+        float y = e.getY();
+        Log.d("DoubleTap:", "Tapped at: (" + x + "," + y + ")");
+//            if (!Settings.canDrawOverlays(getApplicationContext())) {
+//                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+//                        Uri.parse("package:" + getPackageName()));
+//                startActivityForResult(intent, 0);
+//            }
+        // Start the FloatingViewService
+        Intent serviceIntent = new Intent(getApplicationContext(), FloatingViewService.class);
+        startService(serviceIntent);
+
+        // Start your app's MainActivity
+//            Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
+//            mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            startActivity(mainActivityIntent);
+
+        return true;
+    }
+
+}
 
 
     public static void setToWallPaper(Context context) {

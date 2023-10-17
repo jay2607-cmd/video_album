@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:video_album/boxes/boxes.dart';
 import 'package:video_album/database/save.dart';
-import 'package:video_album/provider/dbprovider.dart';
+import 'package:video_album/provider/db_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class VideoPicker extends StatefulWidget {
@@ -17,7 +17,6 @@ class VideoPicker extends StatefulWidget {
 
   @override
   State<VideoPicker> createState() => _VideoPickerState();
-
 }
 
 class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
@@ -84,6 +83,8 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
       });
     });
 
+    print("isRandom $isRandom");
+
     loadDatabase();
   }
 
@@ -99,7 +100,6 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
     channel.invokeMethod("addPath", {
       "albumName": widget.albumName,
       "stringListArgument": newItemData,
-
     });
 
     setState(() {});
@@ -115,7 +115,6 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
     updatedList.remove(videoPath);
     listBox?.put(widget.albumName, updatedList);
 
-
     // remove path from native side as well
     channel.invokeMethod("deletePath", {
       "albumName": widget.albumName,
@@ -126,9 +125,6 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
 
     // Additionally, you can delete the video file from storage if needed
     // File(videoPath).deleteSync();
-
-
-
   }
 
   @override

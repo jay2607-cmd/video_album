@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:video_album/provider/dbprovider.dart';
+import 'package:video_album/provider/db_provider.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({super.key});
