@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_album/provider/db_provider.dart';
 
 class SettingScreen extends StatefulWidget {
@@ -10,8 +11,8 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   bool isRandom = false;
-  bool isHideCreationDate = false;
-  bool _secured = false;
+  bool isUnMuted = false;
+  bool isDoubleTappedOn = false;
 
   @override
   void initState() {
@@ -23,24 +24,39 @@ class _SettingScreenState extends State<SettingScreen> {
       });
     });
 
-    DbProvider().getDoubleTap().then((value) {
+    DbProvider().getUnMuteState().then((value) {
       setState(() {
-        isHideCreationDate = value;
+        isUnMuted = value;
       });
     });
 
-    DbProvider().getAuthState().then((value) {
+    DbProvider().getDoubleTap().then((value) {
       setState(() {
-        _secured = value;
+        isDoubleTappedOn = value;
       });
     });
-    super.initState();
+
+  }
+
+  var channel = MethodChannel("nativeDemo");
+
+  setRandom() {
+    channel.invokeMethod("setRandom", {
+      "isRandomSwitch": isRandom,
+    });
+  }
+
+  setMusic() {
+    channel.invokeMethod("setMusic", {
+        "isUnMuted": isUnMuted,
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(title: Text("Settings")),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -53,24 +69,66 @@ class _SettingScreenState extends State<SettingScreen> {
                   child: ListTile(
                     title: Padding(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 24.0, horizontal: 8),
+                        horizontal: 16),
                       child: Text(
                         "Allow Random Wallpaper",
                       ),
                     ),
-                    trailing: Switch(
+                    trailing: Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
+                          activeColor: Color(0xff4F6DDC),
+                          activeTrackColor: Color(0xffDCE0ED),
+                          inactiveThumbColor: Color(0xffA7B2C7),
+                          inactiveTrackColor: Color(0xffDCE0ED),
+                          value: isRandom,
+                          onChanged: (bool value) async {
+
+                            setRandom();
+
+                            setState(() {
+                              isRandom = value;
+                            });
+
+                            DbProvider().saveRandomState(value);
+                          }),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Color(0xffF0F1F5),
+                      borderRadius: BorderRadius.circular(15)),
+                  child: ListTile(
+                    title: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 18.0, horizontal: 8),
+                      child: Text(
+                        "UnMute Music",
+                      ),
+                    ),
+                    trailing: Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
                         activeColor: Color(0xff4F6DDC),
                         activeTrackColor: Color(0xffDCE0ED),
-                        inactiveThumbColor: Color(0xffA7B2C7),
                         inactiveTrackColor: Color(0xffDCE0ED),
-                        value: isRandom,
+                        inactiveThumbColor: Color(0xffA7B2C7),
+                        value: isUnMuted,
                         onChanged: (bool value) async {
                           setState(() {
-                            isRandom = value;
+                            isUnMuted = value;
                           });
+                          DbProvider().saveUnMuteState(value);
+                          setMusic();
 
-                          DbProvider().saveRandomState(value);
-                        }),
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -95,10 +153,10 @@ class _SettingScreenState extends State<SettingScreen> {
                           activeTrackColor: Color(0xffDCE0ED),
                           inactiveThumbColor: Color(0xffA7B2C7),
                           inactiveTrackColor: Color(0xffDCE0ED),
-                          value: isHideCreationDate,
+                          value: isDoubleTappedOn,
                           onChanged: (bool value) async {
                             setState(() {
-                              isHideCreationDate = value;
+                              isDoubleTappedOn = value;
                             });
                             DbProvider().saveDoubleTap(value);
                           }),
@@ -106,41 +164,7 @@ class _SettingScreenState extends State<SettingScreen> {
                   ),
                 ),
               ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: Color(0xffF0F1F5),
-                      borderRadius: BorderRadius.circular(15)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                    ),
-                    child: ListTile(
-                      title: Text(
-                        "Secure Account",
-                      ),
-                      subtitle: Text(
-                        "Enable two factor authentication",
-                      ),
-                      trailing: Transform.scale(
-                        scale: 0.8,
-                        child: Switch(
-                          activeColor: Color(0xff4F6DDC),
-                          activeTrackColor: Color(0xffDCE0ED),
-                          inactiveTrackColor: Color(0xffDCE0ED),
-                          inactiveThumbColor: Color(0xffA7B2C7),
-                          value: _secured,
-                          onChanged: (bool value) async {
 
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

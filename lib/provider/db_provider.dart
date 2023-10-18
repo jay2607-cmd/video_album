@@ -1,32 +1,24 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DbProvider {
-  final Future<SharedPreferences> _passcodeAuthentication =
-      SharedPreferences.getInstance();
+  final Future<SharedPreferences> _unmute = SharedPreferences.getInstance();
 
   final Future<SharedPreferences> _prefRandom = SharedPreferences.getInstance();
 
-  final Future<SharedPreferences> _doubleTap =
-      SharedPreferences.getInstance();
+  final Future<SharedPreferences> _doubleTap = SharedPreferences.getInstance();
 
-  final Future<SharedPreferences> _hideEmptyCategoriesPref =
-      SharedPreferences.getInstance();
+  // save unmute setting
+  void saveUnMuteState(bool status) async {
+    final instance = await _unmute;
 
-
-
-  // for authentication setting
-  void saveAuthState(bool status) async {
-    final instance = await _passcodeAuthentication;
-
-    instance.setBool("status", status);
+    instance.setBool("unmute", status);
   }
 
-  // for authentication setting
-  // have to add settings
-  Future<bool> getAuthState() async {
-    final instance = await _passcodeAuthentication;
-    if (instance.containsKey("status")) {
-      final value = instance.getBool("status");
+  // get unmute setting
+  Future<bool> getUnMuteState() async {
+    final instance = await _unmute;
+    if (instance.containsKey("unmute")) {
+      final value = instance.getBool("unmute");
 
       return value!;
     } else {
@@ -34,53 +26,31 @@ class DbProvider {
     }
   }
 
-  // for sharing notes
   void saveRandomState(bool status) async {
     final instance = await _prefRandom;
-    instance.setBool("SharingNotes", status);
+    instance.setBool("random", status);
   }
 
-  // for sharing notes
   Future<bool> getRandomState() async {
     final instance = await _prefRandom;
-    if (instance.containsKey("SharingNotes")) {
-      final value = instance.getBool("SharingNotes");
+    if (instance.containsKey("random")) {
+      final value = instance.getBool("random");
       return value!;
     } else {
       return false;
     }
   }
 
-  // for hide the creation date
   void saveDoubleTap(bool status) async {
     final instance = await _doubleTap;
 
-    instance.setBool("hideCreationDate", status);
+    instance.setBool("doubleTap", status);
   }
 
-  // for hide the creation date
   Future<bool> getDoubleTap() async {
     final instance = await _doubleTap;
-    if (instance.containsKey("hideCreationDate")) {
-      final value = instance.getBool("hideCreationDate");
-      return value!;
-    } else {
-      return false;
-    }
-  }
-
-  // for hide the empty category
-  void saveEmptyCategories(bool status) async {
-    final instance = await _hideEmptyCategoriesPref;
-
-    instance.setBool("hideEmptyCategories", status);
-  }
-
-  // for hide the empty category
-  Future<bool> getEmptyCategories() async {
-    final instance = await _hideEmptyCategoriesPref;
-    if (instance.containsKey("hideEmptyCategories")) {
-      final value = instance.getBool("hideEmptyCategories");
+    if (instance.containsKey("doubleTap")) {
+      final value = instance.getBool("doubleTap");
       return value!;
     } else {
       return false;

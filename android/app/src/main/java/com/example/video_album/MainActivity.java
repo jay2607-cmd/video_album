@@ -3,6 +3,7 @@ package com.example.video_album;
 import static com.example.video_album.MyWallpaperService.NewVideoWP;
 import static com.example.video_album.MyWallpaperService.setToWallPaper;
 
+import android.content.Intent;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -29,10 +30,11 @@ import io.flutter.plugin.common.MethodChannel;
 public class MainActivity extends FlutterActivity {
     private static final String CHANNEL_NAME = "nativeDemo";
     List<String> stringList = new ArrayList<>();
-    boolean isRandom;
 
     // just update this value as per user option
-    public static boolean isUnMuted = true;
+    public static boolean isUnMuted = false;
+    public static boolean isRandom = false;
+    public static boolean isDoubleTappedOn = false;
 
     MySharedPreference mySharedPreference;
     AlbumListRepository viewModel;
@@ -60,7 +62,6 @@ public class MainActivity extends FlutterActivity {
             public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
                 if (call.method.equals("showToast")) {
                     stringList = call.argument("stringList");
-                    isRandom = call.argument("booleanValue");
 
                     if (stringList != null) {
                         StringBuilder message = new StringBuilder("Selected Videos:\n");
@@ -105,11 +106,39 @@ public class MainActivity extends FlutterActivity {
                     NewVideoWP(getApplicationContext(), stringList.get(0));
                 }*/
 
+                if (call.method.equals("setRandom")) {
+                    isRandom = call.argument("isRandomSwitch");
+                    Log.d("isRandomSwitch:", "Enter" + isRandom);
+
+                    MyWallpaperService.randomVideo(getApplicationContext(), isRandom);
+
+                }
+
+                if (call.method.equals("setMusic")) {
+                    isUnMuted = call.argument("isUnMuted");
+                    Log.d("isMuteSwitchOn:", "Enter" + isUnMuted);
+
+                    if (isUnMuted) {
+                        MyWallpaperService.unmuteMusic(getApplicationContext());
+                    } else {
+                        MyWallpaperService.muteMusic(getApplicationContext());
+                    }
+
+                }
+
+
                 if (call.method.equals("albumName")) {
 
                     category = call.argument("category");
 
-                    Log.d("categorya:", "Enter" + category);
+
+//                    isRandom = call.argument("isRandom");
+//                    isDoubleTappedOn = call.argument("isDoubleTappedOn");
+//                    isUnMuted = call.argument(("isUnMuted"));
+
+                    Log.d("isRandom:", "Enter" + isRandom);
+                    Log.d("isDoubleTappedOn:", "Enter" + isDoubleTappedOn);
+                    Log.d("isUnMuted:", "Enter" + isUnMuted);
 
                     if (VideoAlbumDatabase.getInstance(getApplicationContext()).addFolderNameDao().isDataExist() == 0) {
                         FolderName notify = new FolderName();
@@ -124,6 +153,7 @@ public class MainActivity extends FlutterActivity {
 
                     createMainDirectory(category);
                     MyWallpaperService.setToWallPaper(getApplicationContext());
+
                 }
 
                 if (call.method.equals("addPath")) {
@@ -141,10 +171,10 @@ public class MainActivity extends FlutterActivity {
 
                 }
 
-                if(call.method.equals("deletePath")) {
+                if (call.method.equals("deletePath")) {
                     String albumName = call.argument("albumName");
                     String path = call.argument("videoPath");
-                    deleteData(path,albumName);
+                    deleteData(path, albumName);
                 }
             }
 
@@ -163,11 +193,11 @@ public class MainActivity extends FlutterActivity {
 //        setToWallPaper(getApplicationContext());
     }
 
-    private  void deleteData(String path, String albumName) {
+    private void deleteData(String path, String albumName) {
         VideosModel videosModel = new VideosModel();
-        Log.e("dataa:"," "+path+" Name: "+albumName);
+        Log.e("dataa:", " " + path + " Name: " + albumName);
 //        videosModel.getAlbum_name();
-        videosViewModel.deleteData(path,albumName);
+        videosViewModel.deleteData(path, albumName);
     }
 
     private void createMainDirectory(String dir) {

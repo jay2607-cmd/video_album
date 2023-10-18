@@ -56,12 +56,14 @@ class _AlbumPageState extends State<AlbumPage> {
     setState(() {});
   }
 
-  bool? isRandom;
-  var isDoubleTapEnabled;
+  bool isRandom = false;
+  bool isUnMuted = false;
+  bool isDoubleTappedOn = false;
 
   @override
   void initState() {
     // addCategory();
+    super.initState();
 
     DbProvider().getRandomState().then((value) {
       setState(() {
@@ -69,19 +71,19 @@ class _AlbumPageState extends State<AlbumPage> {
       });
     });
 
-    DbProvider().getDoubleTap().then((value) {
+    DbProvider().getUnMuteState().then((value) {
       setState(() {
-        isDoubleTapEnabled = value;
+        isUnMuted = value;
       });
     });
 
-    print("isDoubleTapEnabled $isDoubleTapEnabled");
-
-    print("value $isRandom");
+    DbProvider().getDoubleTap().then((value) {
+      setState(() {
+        isDoubleTappedOn = value;
+      });
+    });
 
     loadListData();
-    super.initState();
-
   }
 
   loadListData() async {
@@ -163,12 +165,12 @@ class _AlbumPageState extends State<AlbumPage> {
   }
 
   albumName(String album) {
-    print("categoryController.text ${categoryController.text}");
     channel.invokeMethod("albumName", {
       "category": album,
+      "isRandom": isRandom,
+      "isUnMuted": isUnMuted,
+      "isDoubleTappedOn": isDoubleTappedOn
     });
-
-    print("$album album");
   }
 
   var album;

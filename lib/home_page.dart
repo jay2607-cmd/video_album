@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:video_album/album_page.dart';
 import 'package:video_album/settings.dart';
 
+import 'asset_videos.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -16,6 +18,12 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         body: Column(
           children: [
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => AssetVideos()));
+                },
+                child: Text("Live Wallpaper")),
             ElevatedButton(
                 onPressed: () {
                   Navigator.push(context,

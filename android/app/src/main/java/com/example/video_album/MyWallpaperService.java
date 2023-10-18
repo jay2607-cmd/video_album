@@ -1,5 +1,6 @@
 package com.example.video_album;
 
+import static com.example.video_album.MainActivity.isRandom;
 import static com.example.video_album.MainActivity.isUnMuted;
 
 import android.app.WallpaperManager;
@@ -37,6 +38,7 @@ public class MyWallpaperService extends WallpaperService {
     public static List<String> arrayList = new ArrayList<>();
     public List<VideosModel> modelList = new ArrayList<>();
 
+
     FolderNameRepository folderNameRepository;
     String folderName;
     VideosRepository repository;
@@ -55,6 +57,7 @@ public class MyWallpaperService extends WallpaperService {
 
     public class VideoEngine extends Engine { // Implement OnSharedPreferenceChangeListener
         ExoPlayer exoPlayer;
+        private BroadcastReceiver broadcastReceiver;
 
         public VideoEngine() {
             super();
@@ -72,9 +75,11 @@ public class MyWallpaperService extends WallpaperService {
             folderName = folderNameRepository.getList().get(0).getFolder_name();
 
 
+            Log.e("isMutedcheck:", "" + isUnMuted);
+
             repository = new VideosRepository(getApplication());
             exoPlayer = new ExoPlayer.Builder(getApplicationContext()).setVideoScalingMode(2).build();
-//            exoPlayer2 = exoPlayer;
+            exoPlayer2 = exoPlayer;
 
             Log.d("folderName:", "name--> " + folderName);
 
@@ -84,7 +89,9 @@ public class MyWallpaperService extends WallpaperService {
 
 
             //todo: put condition that isRandom true or not??
-            playRandomVideoWallPaper(modelList);
+//            if (isRandom) {
+//                playRandomVideoWallPaper(modelList);
+//            }
 
            /* IntentFilter intentFilter3 = new IntentFilter("CHANGE_WALLPAPER");
             intentFilter3.addAction("AddVideos");
@@ -121,6 +128,39 @@ public class MyWallpaperService extends WallpaperService {
             registerReceiver(broadcastReceiver3, intentFilter3);*/
 
 
+            IntentFilter intentFilter = new IntentFilter(VIDEO_PARAMS_CONTROL_ACTION);
+            intentFilter.addAction(RANDOM_PARAMS_CONTROL_ACTION);
+            broadcastReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+
+                    if (intent.getAction().toString().equals(VIDEO_PARAMS_CONTROL_ACTION)) {
+//                        exoPlayer.setVolume(0.0f);
+
+                        if (intent.getBooleanExtra(KEY_ACTION, true)) {
+                            Log.d("checkreceiver:", "voulme --> Enter if in boradcast");
+                            exoPlayer.setVolume(0.0f);
+                        } else {
+                            Log.d("checkreceiver:", "voulme --> Enter else");
+                            exoPlayer.setVolume(1.0f);
+                        }
+                    }
+                    if (intent.getAction().toString().equals(RANDOM_PARAMS_CONTROL_ACTION)) {
+                        if (intent.getBooleanExtra(KEY_RANDOM, false)) {
+                            Log.d("checkreceiver:", "video --> Enter if in boradcast");
+//                        playRandomVideoWallPaper(modelList);
+                            playAutoVideoWallPaper(modelList);
+                            return;
+                        } else {
+                            Log.d("checkreceiver:", "video --> Enter else in boradcast");
+
+                            playRandomVideoWallPaper(modelList);
+                        }
+                    }
+                }
+            };
+            registerReceiver(broadcastReceiver, intentFilter);
+
         }
 
         @Override
@@ -128,14 +168,6 @@ public class MyWallpaperService extends WallpaperService {
             super.onSurfaceCreated(holder);
 
             Log.e("CheckData:", "onSurfaceCreated");
-
-            //todo: get data from flutter side
-            if (isUnMuted) {
-                exoPlayer.setVolume(0.0f);
-
-            } else {
-                exoPlayer.setVolume(1.0f);
-            }
 
 
             Log.e("VideoExist:", "onSurfaceCreated" + modelList.size());
@@ -147,7 +179,6 @@ public class MyWallpaperService extends WallpaperService {
             }
 
 //            playAutoVideoWallPaper(modelList);
-
 
             exoPlayer.setRepeatMode(Player.REPEAT_MODE_ALL);
             exoPlayer.setVideoSurface(holder.getSurface());
@@ -176,7 +207,6 @@ public class MyWallpaperService extends WallpaperService {
         int valSizeOfArray;
 
         public void playRandomVideoWallPaper(List<VideosModel> arrayList) {
-            int valSizeOfArray = 0;
             Random rand = new Random();
             String path = "";
             int upperbound = arrayList.size();
@@ -184,56 +214,56 @@ public class MyWallpaperService extends WallpaperService {
                 int int_random = rand.nextInt(upperbound);
 
                 path = arrayList.get(int_random).getVideo_path();
+                Log.e("videoPath:", "Random Video Path--> " + path);
                 MediaItem mediaItem = MediaItem.fromUri(path);
-                if (exoPlayer.hasPreviousMediaItem()) {
-                    if (!exoPlayer.getMediaItemAt(exoPlayer.getPreviousMediaItemIndex()).equals(mediaItem)) {
-                        exoPlayer.addMediaItem(mediaItem);
+                if (exoPlayer2.hasPreviousMediaItem()) {
+                    if (!exoPlayer2.getMediaItemAt(exoPlayer2.getPreviousMediaItemIndex()).equals(mediaItem)) {
+                        exoPlayer2.addMediaItem(mediaItem);
                         valSizeOfArray++;
                     }
                 } else {
-                    exoPlayer.addMediaItem(mediaItem);
+                    exoPlayer2.addMediaItem(mediaItem);
                     valSizeOfArray++;
                 }
             }
-
-    }
-
-    @Override
-    public void onVisibilityChanged(boolean visible) {
-        if (visible) {
-            exoPlayer.play();
-            return;
         }
-        exoPlayer.pause();
-    }
 
-    @Override
-    public void onSurfaceDestroyed(SurfaceHolder holder) {
-        super.onSurfaceDestroyed(holder);
-        if (exoPlayer.isPlaying()) {
-            exoPlayer.stop();
+        @Override
+        public void onVisibilityChanged(boolean visible) {
+            if (visible) {
+                exoPlayer.play();
+                return;
+            }
+            exoPlayer.pause();
         }
-        if (exoPlayer != null) {
-            exoPlayer.release();
+
+        @Override
+        public void onSurfaceDestroyed(SurfaceHolder holder) {
+            super.onSurfaceDestroyed(holder);
+            if (exoPlayer.isPlaying()) {
+                exoPlayer.stop();
+            }
+            if (exoPlayer != null) {
+                exoPlayer.release();
+            }
+            exoPlayer = null;
         }
-        exoPlayer = null;
-    }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
 
-        if (exoPlayer != null) {
-            exoPlayer.release();
+            if (exoPlayer != null) {
+                exoPlayer.release();
+            }
+            this.exoPlayer = null;
+            MyWallpaperService.this.unregisterReceiver(broadcastReceiver);
+
         }
-        this.exoPlayer = null;
-//            MyWallpaperService.this.unregisterReceiver(broadcastReceiver3);
 
-    }
-
-    @Override
-    public void onTouchEvent(MotionEvent event) {
-        gestureDetector.onTouchEvent(event);
+        @Override
+        public void onTouchEvent(MotionEvent event) {
+            gestureDetector.onTouchEvent(event);
 //            switch (event.getAction()) {
 //                case MotionEvent.ACTION_DOWN:
 //                    touchDownMs = System.currentTimeMillis();
@@ -271,8 +301,8 @@ public class MyWallpaperService extends WallpaperService {
 //                        }, ViewConfiguration.getDoubleTapTimeout());
 //                    }
 //            }
+        }
     }
-}
 
     // Rest of your MyWallpaperService class...
     public static void muteMusic(Context context) {
@@ -310,37 +340,43 @@ public class MyWallpaperService extends WallpaperService {
 //    }
 //
 
-private class GestureListener extends GestureDetector.SimpleOnGestureListener {
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
-    @Override
-    public boolean onDown(MotionEvent e) {
-        return true;
-    }
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
 
-    // event when double tap occurs
-    @Override
-    public boolean onDoubleTap(MotionEvent e) {
-        float x = e.getX();
-        float y = e.getY();
-        Log.d("DoubleTap:", "Tapped at: (" + x + "," + y + ")");
+        // event when double tap occurs
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            float x = e.getX();
+            float y = e.getY();
+            Log.d("DoubleTap:", "Tapped at: (" + x + "," + y + ")");
 //            if (!Settings.canDrawOverlays(getApplicationContext())) {
 //                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
 //                        Uri.parse("package:" + getPackageName()));
 //                startActivityForResult(intent, 0);
 //            }
-        // Start the FloatingViewService
-        Intent serviceIntent = new Intent(getApplicationContext(), FloatingViewService.class);
-        startService(serviceIntent);
+            // Start the FloatingViewService
+            Intent serviceIntent = new Intent(getApplicationContext(), FloatingViewService.class);
+            startService(serviceIntent);
 
-        // Start your app's MainActivity
+            // Start your app's MainActivity
 //            Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
 //            mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //            startActivity(mainActivityIntent);
 
-        return true;
+            return true;
+        }
+
     }
 
-}
+    public static void randomVideo(Context context, boolean value) {
+        Intent it = new Intent(RANDOM_PARAMS_CONTROL_ACTION);
+        it.putExtra(KEY_RANDOM, value);
+        context.sendBroadcast(it);
+    }
 
 
     public static void setToWallPaper(Context context) {
