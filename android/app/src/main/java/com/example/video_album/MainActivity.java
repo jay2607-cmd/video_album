@@ -3,6 +3,8 @@ package com.example.video_album;
 import static com.example.video_album.MyWallpaperService.NewVideoWP;
 import static com.example.video_album.MyWallpaperService.setToWallPaper;
 
+import android.app.WallpaperInfo;
+import android.app.WallpaperManager;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.widget.Toast;
@@ -82,6 +84,7 @@ public class MainActivity extends FlutterActivity {
 
                         mySharedPreference.setVideoPath(delimitedString);
 
+
                         x = delimitedString;
 
                         // Set the wallpaper
@@ -123,7 +126,6 @@ public class MainActivity extends FlutterActivity {
                     } else {
                         MyWallpaperService.muteMusic(getApplicationContext());
                     }
-
                 }
 
 
@@ -131,14 +133,19 @@ public class MainActivity extends FlutterActivity {
 
                     category = call.argument("category");
 
-
-//                    isRandom = call.argument("isRandom");
+                    isRandom = call.argument("isRandom");
 //                    isDoubleTappedOn = call.argument("isDoubleTappedOn");
 //                    isUnMuted = call.argument(("isUnMuted"));
 
-                    Log.d("isRandom:", "Enter" + isRandom);
+
+//                    Log.d("isRandomInMainActivity1:", "Enter" + isRandom);
                     Log.d("isDoubleTappedOn:", "Enter" + isDoubleTappedOn);
                     Log.d("isUnMuted:", "Enter" + isUnMuted);
+
+                    mySharedPreference.setIsRandom(isRandom);
+
+                    Log.d("isRandomInMainActivity:", "Enter" + mySharedPreference.getIsRandom());
+
 
                     if (VideoAlbumDatabase.getInstance(getApplicationContext()).addFolderNameDao().isDataExist() == 0) {
                         FolderName notify = new FolderName();
@@ -152,8 +159,15 @@ public class MainActivity extends FlutterActivity {
                     }
 
                     createMainDirectory(category);
-                    MyWallpaperService.setToWallPaper(getApplicationContext());
+                    WallpaperManager wpm = WallpaperManager.getInstance(getApplicationContext());
+                    WallpaperInfo info = wpm.getWallpaperInfo();
+                    if (info != null && info.getPackageName().equals(getPackageName())) {
+                        Log.d("wpm:", "We're already running");
+                        MyWallpaperService.alreadySetWallPaper(MainActivity.this, category, isRandom, isRandom);
 
+                    } else {
+                        MyWallpaperService.setToWallPaper(getApplicationContext());
+                    }
                 }
 
                 if (call.method.equals("addPath")) {

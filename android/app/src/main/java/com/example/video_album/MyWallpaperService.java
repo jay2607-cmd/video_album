@@ -3,6 +3,7 @@ package com.example.video_album;
 import static com.example.video_album.MainActivity.isRandom;
 import static com.example.video_album.MainActivity.isUnMuted;
 
+import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -35,6 +36,10 @@ public class MyWallpaperService extends WallpaperService {
     private static final String KEY_RANDOM = "set_random_videos";
     public static final String VIDEO_PARAMS_CONTROL_ACTION = BuildConfig.APPLICATION_ID;
     public static final String RANDOM_PARAMS_CONTROL_ACTION = "random_video_data";
+    public static final String ACTION_RESET_WP = "action_reset_wp";
+    public static final String KEY_ALBUM_NAME = "key_album_name";
+    public static final String KEY_ALL_VIDEO = "key_all_video";
+    public static final String KEY_RANDOM_VIDEO = "key_random_video";
     public static List<String> arrayList = new ArrayList<>();
     public List<VideosModel> modelList = new ArrayList<>();
 
@@ -43,6 +48,7 @@ public class MyWallpaperService extends WallpaperService {
     String folderName;
     VideosRepository repository;
     GestureDetector gestureDetector;
+    MySharedPreference mySharedPreference;
 
 
     @Override
@@ -59,16 +65,18 @@ public class MyWallpaperService extends WallpaperService {
         ExoPlayer exoPlayer;
         private BroadcastReceiver broadcastReceiver;
 
+
         public VideoEngine() {
             super();
             Log.d("folderName:", "VideoEngine");
         }
 
-
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
 
             super.onCreate(surfaceHolder);
+
+            mySharedPreference = MySharedPreference.getPreferences(getApplicationContext());
 
             Log.d("VideoEngine:", "onCreate");
             folderNameRepository = new FolderNameRepository(getApplication());
@@ -130,6 +138,7 @@ public class MyWallpaperService extends WallpaperService {
 
             IntentFilter intentFilter = new IntentFilter(VIDEO_PARAMS_CONTROL_ACTION);
             intentFilter.addAction(RANDOM_PARAMS_CONTROL_ACTION);
+            intentFilter.addAction(ACTION_RESET_WP);
             broadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -157,6 +166,19 @@ public class MyWallpaperService extends WallpaperService {
                             playRandomVideoWallPaper(modelList);
                         }
                     }
+                    if (intent.getAction().equals(ACTION_RESET_WP)) {
+                        String name = intent.getStringExtra(KEY_ALBUM_NAME);
+                        boolean playAll = intent.getBooleanExtra(KEY_ALL_VIDEO, false);
+                        boolean playRandom = intent.getBooleanExtra(KEY_RANDOM_VIDEO, false);
+                        folderName = name;
+                        modelList = new ArrayList<>();
+                        modelList = repository.getVideosData(name);
+                        if (playRandom) {
+                            playRandomVideoWallPaper(modelList);
+                        } else {
+                            playAutoVideoWallPaper(modelList);
+                        }
+                    }
                 }
             };
             registerReceiver(broadcastReceiver, intentFilter);
@@ -165,9 +187,39 @@ public class MyWallpaperService extends WallpaperService {
 
         @Override
         public void onSurfaceCreated(SurfaceHolder holder) {
-            super.onSurfaceCreated(holder);
 
-            Log.e("CheckData:", "onSurfaceCreated");
+//            todo: address the first time value functionality
+
+            io.flutter.Log.d("isRandomInMainActivity23:", "Enter" + mySharedPreference.getIsRandom());
+
+     /*       Log.e("CheckData:", "onSurfaceCreated");
+
+            if (isRandom) {
+                playRandomVideoWallPaper(modelList);
+            }
+
+            Log.e("uihzsf uowg8", "sifo" + isRandom);
+
+            if (isUnMuted) {
+                exoPlayer.setVolume(1.0f);
+            } else {
+                exoPlayer.setVolume(0.0f);
+            }*/
+
+            if (isUnMuted) {
+                exoPlayer.setVolume(1.0f);
+            } else {
+                exoPlayer.setVolume(0.0f);
+            }
+
+
+            if (mySharedPreference.getRandomVideo()) {
+                Log.d("checkWP:", "Enter --> Random Wp");
+                playRandomVideoWallPaper(modelList);
+            } else {
+                Log.d("checkWP:", "Enter --> Auto Wp");
+                playAutoVideoWallPaper(modelList);
+            }
 
 
             Log.e("VideoExist:", "onSurfaceCreated" + modelList.size());
@@ -195,7 +247,11 @@ public class MyWallpaperService extends WallpaperService {
                 if (file.exists()) {
                     Log.e("videoPath:", "Auto Video Path--> " + path);
                     MediaItem mediaItem = MediaItem.fromUri(path);
-                    exoPlayer2.addMediaItem(mediaItem);
+                    if (i == 0) {
+                        exoPlayer2.setMediaItem(mediaItem);
+                    } else {
+                        exoPlayer2.addMediaItem(mediaItem);
+                    }
 //                    valSizeOfArray++;
                 } else {
                     Log.e("VideoExist:", "is Not Exist");
@@ -218,11 +274,24 @@ public class MyWallpaperService extends WallpaperService {
                 MediaItem mediaItem = MediaItem.fromUri(path);
                 if (exoPlayer2.hasPreviousMediaItem()) {
                     if (!exoPlayer2.getMediaItemAt(exoPlayer2.getPreviousMediaItemIndex()).equals(mediaItem)) {
-                        exoPlayer2.addMediaItem(mediaItem);
+                        if (i == 0) {
+                            exoPlayer2.setMediaItem(mediaItem);
+                        } else {
+                            exoPlayer2.addMediaItem(mediaItem);
+                        }
+                        valSizeOfArray++;
+                    } else{
+                        if (i == 0) {
+                            exoPlayer2.setMediaItem(mediaItem);
+                        }
                         valSizeOfArray++;
                     }
                 } else {
-                    exoPlayer2.addMediaItem(mediaItem);
+                    if (i == 0) {
+                        exoPlayer2.setMediaItem(mediaItem);
+                    } else {
+                        exoPlayer2.addMediaItem(mediaItem);
+                    }
                     valSizeOfArray++;
                 }
             }
@@ -340,6 +409,7 @@ public class MyWallpaperService extends WallpaperService {
 //    }
 //
 
+
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
         @Override
@@ -376,6 +446,14 @@ public class MyWallpaperService extends WallpaperService {
         Intent it = new Intent(RANDOM_PARAMS_CONTROL_ACTION);
         it.putExtra(KEY_RANDOM, value);
         context.sendBroadcast(it);
+    }
+
+    public static void alreadySetWallPaper(Activity activity, String albumName, boolean randomVideo, boolean autoVideo) {
+        Intent it = new Intent(ACTION_RESET_WP);
+        it.putExtra(KEY_ALBUM_NAME, albumName);
+        it.putExtra(KEY_RANDOM_VIDEO, randomVideo);
+        it.putExtra(KEY_ALL_VIDEO, autoVideo);
+        activity.sendBroadcast(it);
     }
 
 

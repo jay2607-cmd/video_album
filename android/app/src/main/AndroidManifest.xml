@@ -7,7 +7,7 @@
 
     <application
         android:label="video_album"
-        android:name="${applicationName}"
+        android:name=".MyApplication"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

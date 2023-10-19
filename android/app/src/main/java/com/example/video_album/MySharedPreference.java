@@ -14,30 +14,39 @@ public class MySharedPreference {
         editor.apply();
     }
 
-    public void setVideoSound(boolean videoSound){
+    public void setVideoSound(boolean videoSound) {
         editor.putBoolean(Constants.ENABLE_SOUND, videoSound);
         editor.apply();
     }
 
-    public boolean getVideoSound(){
+    public boolean getVideoSound() {
         return sharedPreferences.getBoolean(Constants.ENABLE_SOUND, false);
     }
 
-    public void setFirstTimeVideo(boolean videoSound){
+    public void setFirstTimeVideo(boolean videoSound) {
         editor.putBoolean(Constants.FIRST_TIME, videoSound);
         editor.apply();
     }
 
-    public boolean getFirstTime(){
+    public boolean getFirstTime() {
         return sharedPreferences.getBoolean(Constants.FIRST_TIME, false);
     }
 
-    public void setRandomVideo(boolean randomVideo){
+    public void setRandomVideo(boolean randomVideo) {
         editor.putBoolean(Constants.ENABLE_RANDOM_VIDEO, randomVideo);
         editor.apply();
     }
 
-    public boolean getRandomVideo(){
+    public boolean getIsRandom() {
+        return sharedPreferences.getBoolean(Constants.IS_RANDOM, false);
+    }
+
+    public void setIsRandom(boolean setRandom) {
+        editor.putBoolean(Constants.IS_RANDOM, setRandom);
+        editor.apply();
+    }
+
+    public boolean getRandomVideo() {
         return sharedPreferences.getBoolean(Constants.ENABLE_RANDOM_VIDEO, false);
     }
 
@@ -55,7 +64,7 @@ public class MySharedPreference {
         return sharedPreferences.getString("VIDEO_PATH", "");
     }
 
-    public void clear(){
+    public void clear() {
         editor.clear();
         editor.apply();
     }
