@@ -330,9 +330,18 @@ public class MyWallpaperService extends WallpaperService {
 
         }
 
+        private void setNextVideo() {
+            exoPlayer2.seekToNext();
+            Log.e("currentIndex", "" + exoPlayer2.getCurrentMediaItemIndex());
+        }
+
         @Override
         public void onTouchEvent(MotionEvent event) {
             gestureDetector.onTouchEvent(event);
+            setNextVideo();
+
+
+
 //            switch (event.getAction()) {
 //                case MotionEvent.ACTION_DOWN:
 //                    touchDownMs = System.currentTimeMillis();
@@ -423,14 +432,17 @@ public class MyWallpaperService extends WallpaperService {
             float x = e.getX();
             float y = e.getY();
             Log.d("DoubleTap:", "Tapped at: (" + x + "," + y + ")");
+
+            exoPlayer2.seekToNext();
+
 //            if (!Settings.canDrawOverlays(getApplicationContext())) {
 //                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
 //                        Uri.parse("package:" + getPackageName()));
 //                startActivityForResult(intent, 0);
 //            }
             // Start the FloatingViewService
-            Intent serviceIntent = new Intent(getApplicationContext(), FloatingViewService.class);
-            startService(serviceIntent);
+//            Intent serviceIntent = new Intent(getApplicationContext(), FloatingViewService.class);
+//            startService(serviceIntent);
 
             // Start your app's MainActivity
 //            Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);

@@ -165,6 +165,9 @@ public class MainActivity extends FlutterActivity {
                         Log.d("wpm:", "We're already running");
                         MyWallpaperService.alreadySetWallPaper(MainActivity.this, category, isRandom, isRandom);
 
+                        Toast.makeText(MainActivity.this, "\"" + category + "\" Wallpaper Applied Successfully", Toast.LENGTH_SHORT).show();
+
+
                     } else {
                         MyWallpaperService.setToWallPaper(getApplicationContext());
                     }
