@@ -1,5 +1,7 @@
 package com.example.video_album;
 
+import static com.example.video_album.Constants.ACTION_RESET_SINGLE_WP;
+import static com.example.video_album.Constants.KEY_NEW_PATH;
 import static com.example.video_album.MainActivity.isRandom;
 import static com.example.video_album.MainActivity.isUnMuted;
 
@@ -179,6 +181,7 @@ public class MyWallpaperService extends WallpaperService {
                             playAutoVideoWallPaper(modelList);
                         }
                     }
+
                 }
             };
             registerReceiver(broadcastReceiver, intentFilter);
@@ -280,7 +283,7 @@ public class MyWallpaperService extends WallpaperService {
                             exoPlayer2.addMediaItem(mediaItem);
                         }
                         valSizeOfArray++;
-                    } else{
+                    } else {
                         if (i == 0) {
                             exoPlayer2.setMediaItem(mediaItem);
                         }
@@ -339,7 +342,6 @@ public class MyWallpaperService extends WallpaperService {
         public void onTouchEvent(MotionEvent event) {
             gestureDetector.onTouchEvent(event);
             setNextVideo();
-
 
 
 //            switch (event.getAction()) {
@@ -403,6 +405,12 @@ public class MyWallpaperService extends WallpaperService {
         context.sendBroadcast(it);
 //        String[] paths = path.split(",");
 
+    }
+
+    public static void resetWallPaper(Context activity, String path) {
+        Intent it = new Intent(ACTION_RESET_SINGLE_WP);
+        it.putExtra(KEY_NEW_PATH, path);
+        activity.sendBroadcast(it);
     }
 
 //    @Override

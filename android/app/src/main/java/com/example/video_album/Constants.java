@@ -9,4 +9,11 @@ public class Constants {
     public static final String FOLDER_NAME = "folder_name";
     public static final String VIDEO_ALBUM = "Video Album";
 
+    public static String KEY_NEW_PATH = "add_new_path";
+
+    public static final String ENABLE_ALL_ALBUM_VIDEO = "enable_all_album_video";
+
+    public static String ACTION_RESET_SINGLE_WP = "action_reset_single_wp";
+
+
 }

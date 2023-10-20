@@ -45,6 +45,10 @@ public class VideosViewModel extends AndroidViewModel {
         repository.deleteData(path, albumName);
     }
 
+    public List<VideosModel> getAllVideos(String dirName) {
+        return repository.getVideosData(dirName);
+    }
+
     public void deleteVideo(int id) {
         repository.deleteVideo(id);
     }

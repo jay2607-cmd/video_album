@@ -1,5 +1,7 @@
 package com.example.video_album;
 
+import static com.example.video_album.Constants.ENABLE_ALL_ALBUM_VIDEO;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -30,6 +32,10 @@ public class MySharedPreference {
 
     public boolean getFirstTime() {
         return sharedPreferences.getBoolean(Constants.FIRST_TIME, false);
+    }
+
+    public boolean getAllAlbumVideo() {
+        return sharedPreferences.getBoolean(ENABLE_ALL_ALBUM_VIDEO, false);
     }
 
     public void setRandomVideo(boolean randomVideo) {

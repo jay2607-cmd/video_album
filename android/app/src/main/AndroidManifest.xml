@@ -8,6 +8,7 @@
     <application
         android:label="video_album"
         android:name=".MyApplication"
+        android:theme="@style/LaunchTheme"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -30,6 +31,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".WallpaperPreviewActivity"
+            android:theme="@style/LaunchTheme"/>
         <service
             android:name=".MyWallpaperService"
             android:enabled="true"

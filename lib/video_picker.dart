@@ -22,7 +22,11 @@ class VideoPicker extends StatefulWidget {
 class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
   var channel = const MethodChannel("nativeDemo");
 
-  List<String> _selectedFilePaths = []; // Store file paths
+  List<String> _selectedFilePaths = [];
+
+  bool isUnMuted = false;
+
+  bool isDoubleTappedOn = false;
 
   Future<Uint8List?> _generateVideoThumbnail(String videoPath) async {
     final uint8List = await VideoThumbnail.thumbnailData(
@@ -83,6 +87,18 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
       });
     });
 
+    DbProvider().getUnMuteState().then((value) {
+      setState(() {
+        isUnMuted = value;
+      });
+    });
+
+    DbProvider().getDoubleTap().then((value) {
+      setState(() {
+        isDoubleTappedOn = value;
+      });
+    });
+
     print("isRandom $isRandom");
 
     loadDatabase();
@@ -95,6 +111,15 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
   }
 
   List<String> dbList = [];
+
+  albumName() {
+    channel.invokeMethod("albumName", {
+      "category": widget.albumName,
+      "isRandom": isRandom,
+      "isUnMuted": isUnMuted,
+      "isDoubleTappedOn": isDoubleTappedOn
+    });
+  }
 
   void saveListToDatabase(List<String> newItemData) async {
     channel.invokeMethod("addPath", {
@@ -223,6 +248,11 @@ class _VideoPickerState extends State<VideoPicker> with WidgetsBindingObserver {
                 },
               ),
             ),
+            ElevatedButton(
+                onPressed: () {
+                  albumName();
+                },
+                child: Text("Set"))
           ],
         ),
       ),

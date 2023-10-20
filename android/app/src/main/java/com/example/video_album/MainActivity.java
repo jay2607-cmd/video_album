@@ -163,7 +163,10 @@ public class MainActivity extends FlutterActivity {
                     WallpaperInfo info = wpm.getWallpaperInfo();
                     if (info != null && info.getPackageName().equals(getPackageName())) {
                         Log.d("wpm:", "We're already running");
-                        MyWallpaperService.alreadySetWallPaper(MainActivity.this, category, isRandom, isRandom);
+                        Intent intent = new Intent(MainActivity.this, WallpaperPreviewActivity.class);
+                        intent.putExtra("album_name", category);
+                        startActivity(intent);
+//                        MyWallpaperService.alreadySetWallPaper(MainActivity.this, category, isRandom, isRandom);
 
                         Toast.makeText(MainActivity.this, "\"" + category + "\" Wallpaper Applied Successfully", Toast.LENGTH_SHORT).show();
 
