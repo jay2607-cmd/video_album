@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_album/provider/db_provider.dart';
 import 'package:video_album/video_picker.dart';
 
@@ -29,19 +28,6 @@ class _AlbumPageState extends State<AlbumPage> {
   List<String> dbList = [];
 
   List<String> _selectedFilePaths = []; // Store file paths
-
-  /* void saveListToDatabase() async {
-
-    for (int i = 0; i < _selectedFilePaths.length; i++) {
-      dbList.add(_selectedFilePaths[i]);
-    }
-
-    print("widget.albumName ${dbList.length}");
-
-    await listBox.put(widget.albumName, dbList);
-
-
-  }*/
 
   void saveListToDatabase() async {
     // Retrieve the existing list from Hive or initialize it if it doesn't exist
@@ -122,8 +108,6 @@ class _AlbumPageState extends State<AlbumPage> {
 
   @override
   void dispose() {
-    // Dispose the TextEditingController to prevent memory leaks
-    // Dispose the TextEditingController to prevent memory leaks
     categoryController.dispose();
     super.dispose();
   }
@@ -153,8 +137,6 @@ class _AlbumPageState extends State<AlbumPage> {
                 // Access the text from the controller
                 final enteredText = categoryController.text;
                 print('Entered Text: $enteredText');
-                // TODO : add backend code as well
-
                 addCategory();
                 categoryController.clear();
                 Navigator.of(context).pop(); // Close the dialog

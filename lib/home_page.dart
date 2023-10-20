@@ -16,7 +16,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Text("Video Album"),),
         body: Column(
           children: [
             ElevatedButton(
@@ -36,7 +35,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => SettingScreen()));
                 },
-                child: Text("Settings"))
+                child: Text("Settings"),)
           ],
         ),
       ),

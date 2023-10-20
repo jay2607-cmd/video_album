@@ -7,14 +7,12 @@ class DbProvider {
 
   final Future<SharedPreferences> _doubleTap = SharedPreferences.getInstance();
 
-  // save unmute setting
   void saveUnMuteState(bool status) async {
     final instance = await _unmute;
 
     instance.setBool("unmute", status);
   }
 
-  // get unmute setting
   Future<bool> getUnMuteState() async {
     final instance = await _unmute;
     if (instance.containsKey("unmute")) {
