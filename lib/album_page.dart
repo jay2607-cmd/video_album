@@ -213,10 +213,11 @@ class _AlbumPageState extends State<AlbumPage> {
 
   Future<Uint8List?> generateVideoThumbnail(String videoPath) async {
     final thumbnail = await VideoThumbnail.thumbnailData(
-      video: videoPath,
-      imageFormat: ImageFormat.JPEG,
-      quality: 100,
-    );
+        video: videoPath,
+        imageFormat: ImageFormat.JPEG,
+        quality: 100,
+        maxHeight: 325,
+        maxWidth: 250);
     return thumbnail;
   }
 
@@ -226,20 +227,48 @@ class _AlbumPageState extends State<AlbumPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-          appBar: AppBar(
-            title: Text("Albums"),
+        appBar: AppBar(
+          actions: [
+            IconButton(
+                iconSize: 50,
+                onPressed: _openDialog,
+                icon: Image.asset(
+                  "assets/images/add.png",
+                ))
+          ],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: IconButton(
+              icon: Image.asset(
+                'assets/images/back.png',
+                height: 28,
+                width: 28,
+              ),
+              onPressed: () {},
+            ),
           ),
-          body: ValueListenableBuilder<Box<Save>>(
-            valueListenable: Boxes.getData().listenable(),
-            builder: (context, box, _) {
-              data = box.values.toList().cast<Save>();
-              // dataLegnth.length =  data.length;
-              return GridView.builder(
+          title: const Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Text(
+              "Albums",
+            ),
+          ),
+        ),
+        body: ValueListenableBuilder<Box<Save>>(
+          valueListenable: Boxes.getData().listenable(),
+          builder: (context, box, _) {
+            data = box.values.toList().cast<Save>();
+            // dataLegnth.length =  data.length;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 25.0),
+              child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 6,
-                    childAspectRatio: 0.50),
+                    childAspectRatio: 0.55),
                 itemCount: box.length,
                 itemBuilder: (context, index) {
                   album = data[index].name;
@@ -264,264 +293,287 @@ class _AlbumPageState extends State<AlbumPage> {
                       );
                     },
                     child: Card(
-                      color: Color(0xffF6F7F8),
-                      child: Container(
-                        color: Color(0xffF0F1F5),
-                        child: Stack(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      "${data[index].name}",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    /*
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        albumName(data[index].name);
-                                      },
-                                      child: Text("Set"),
-                                    ),*/
-                                    FutureBuilder<Uint8List?>(
-                                      future: firstVideoThumbnailFuture,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState ==
-                                                ConnectionState.done &&
-                                            snapshot.data != null) {
-                                          return Stack(
-                                            children: [
-                                              ClipRect(
-                                                clipper: ThumbnailClipper(0.9),
-                                                child: Image.memory(
-                                                    snapshot.data!),
-                                              ),
-                                              Opacity(
+                        child: Container(
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  /*Text(
+                                          "${data[index].name}",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            albumName(data[index].name);
+                                          },
+                                          child: Text("Set"),
+                                        ),*/
+                                  FutureBuilder<Uint8List?>(
+                                    future: firstVideoThumbnailFuture,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                              ConnectionState.done &&
+                                          snapshot.data != null) {
+                                        return Stack(
+                                          children: [
+                                            ClipRect(
+                                              clipper: ThumbnailClipper(0.9),
+                                              child: Opacity(
                                                 opacity: 0.3,
-                                                child: Container(
-                                                  color: Colors
-                                                      .black, // You can change the overlay color
-                                                ),
+                                                child: Image.memory(
+                                                    snapshot.data!,
+                                                    fit: BoxFit.fill),
                                               ),
-                                              Positioned(
-                                                bottom: 0,
-                                                left: 0,
-                                                right: 0,
-                                                child: Column(
-                                                  children: [
-                                                    Text(
-                                                      "${data[index].name}",
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors
-                                                            .white, // Text color
-                                                      ),
-                                                    ),
-                                                    ElevatedButton(
-                                                      onPressed: () {
-                                                        albumName(
-                                                            data[index].name);
-                                                      },
-                                                      child: Text("Set"),
-                                                    ),
-                                                  ],
+                                            ),
+                                            Container(
+                                              color: Colors
+                                                  .black, // You can change the overlay color
+                                            ),
+                                            Positioned(
+                                              top: 0,
+                                              right: 0,
+                                              child: PopupMenuButton<String>(
+                                                icon: Padding(
+                                                  padding:
+                                                  const EdgeInsets.only(
+                                                      bottom: 12.0,
+                                                      left: 14),
+                                                  child: Icon(
+                                                      Icons.more_horiz_rounded),
                                                 ),
-                                              ),
-                                              Positioned(
-                                                top: 0,
-                                                right: 0,
-                                                child: PopupMenuButton<String>(
-                                                  icon: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            bottom: 12.0,
-                                                            left: 14),
-                                                    child: Icon(Icons
-                                                        .more_horiz_rounded),
-                                                  ),
-                                                  onSelected: (result) {
-                                                    if (result ==
-                                                        "deleteCategory") {
-                                                      showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                            context) {
-                                                          return AlertDialog(
-                                                            title: const Text(
-                                                                'Warning!',
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .red)),
-                                                            content: const Text(
-                                                                'Do you really want to delete this Category!'),
-                                                            actions: [
-                                                              TextButton(
-                                                                child: Text(
-                                                                    'Cancel'),
-                                                                onPressed: () {
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                },
-                                                              ),
-                                                              TextButton(
-                                                                child:
-                                                                    Text('OK'),
-                                                                onPressed: () {
+                                                onSelected: (result) {
+                                                  if (result ==
+                                                      "deleteCategory") {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                      context) {
+                                                        return AlertDialog(
+                                                          title: const Text(
+                                                              'Warning!',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .red)),
+                                                          content: const Text(
+                                                              'Do you really want to delete this Category!'),
+                                                          actions: [
+                                                            TextButton(
+                                                              child: Text(
+                                                                  'Cancel'),
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                            ),
+                                                            TextButton(
+                                                              child: Text('OK'),
+                                                              onPressed: () {
+                                                                if (categoryList
+                                                                    .isNotEmpty) {
                                                                   delete(data[
-                                                                      index]);
+                                                                  index]
+                                                                      .name);
+                                                                  print(
+                                                                      "Before Deletion: categoryList: $categoryList");
                                                                   categoryList.remove(
                                                                       categoryList
                                                                           .last);
-
-                                                                  Navigator.pop(
-                                                                      context);
                                                                   print(
-                                                                      "categoryList.last ${categoryList.length}");
-                                                                },
-                                                              ),
-                                                            ],
-                                                          );
-                                                        },
-                                                      );
+                                                                      "After Deletion: categoryList: $categoryList");
+                                                                }
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
 
-                                                      setState(() {});
-                                                    } else if (result ==
-                                                        "shareAlbum") {
-                                                      shareMultipleVideos();
-                                                    } else if (result ==
-                                                        "Download") {
-                                                      downloadVideo(
-                                                          'assets/videos/vid_3.mp4');
-                                                    }
-                                                  },
-                                                  itemBuilder:
-                                                      (BuildContext context) {
-                                                    return <PopupMenuEntry<
-                                                        String>>[
-                                                      PopupMenuItem<String>(
-                                                        value: 'deleteCategory',
-                                                        child: Text('Delete'),
-                                                      ),
-                                                      PopupMenuItem<String>(
-                                                        value: 'shareAlbum',
-                                                        child:
-                                                            Text('Share Album'),
-                                                      ),
-                                                      PopupMenuItem<String>(
-                                                        value: 'Download',
-                                                        child: Text('Download'),
-                                                      ),
-                                                    ];
-                                                  },
-                                                ),
+                                                    setState(() {});
+                                                  } else if (result ==
+                                                      "shareAlbum") {
+                                                    shareMultipleVideos();
+                                                  } else if (result ==
+                                                      "Download") {
+                                                    downloadVideo(
+                                                        'assets/videos/vid_3.mp4');
+                                                  }
+                                                },
+                                                itemBuilder:
+                                                    (BuildContext context) {
+                                                  return <PopupMenuEntry<
+                                                      String>>[
+                                                    PopupMenuItem<String>(
+                                                      value: 'deleteCategory',
+                                                      child: Text('Delete'),
+                                                    ),
+                                                    PopupMenuItem<String>(
+                                                      value: 'shareAlbum',
+                                                      child:
+                                                      Text('Share Album'),
+                                                    ),
+                                                    PopupMenuItem<String>(
+                                                      value: 'Download',
+                                                      child: Text('Download'),
+                                                    ),
+                                                  ];
+                                                },
                                               ),
-                                            ],
-                                          );
-                                        } else {
-                                          return Image.asset(
-                                            'assets/images/placeholder.jpg',
-                                            fit: BoxFit.cover,
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            /*Align(
-                              alignment: Alignment.topRight,
-                              child: PopupMenuButton<String>(
-                                icon: Padding(
-                                  padding: const EdgeInsets.only(
-                                      bottom: 12.0, left: 14),
-                                  child: Icon(Icons.more_horiz_rounded),
-                                ),
-                                onSelected: (result) {
-                                  if (result == "deleteCategory") {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: const Text('Warning!',
-                                              style:
-                                                  TextStyle(color: Colors.red)),
-                                          content: const Text(
-                                              'Do you really want to delete this Category!'),
-                                          actions: [
-                                            TextButton(
-                                              child: Text('Cancel'),
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
                                             ),
-                                            TextButton(
-                                              child: Text('OK'),
-                                              onPressed: () {
-                                                delete(data[index]);
-                                                categoryList
-                                                    .remove(categoryList.last);
+                                            Positioned(
+                                              bottom: 0,
+                                              left: 0,
+                                              right: 0,
+                                              child: Column(
+                                                children: [
+                                                  SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Container(
+                                                      height: 40,
+                                                      width: double.infinity,
+                                                      child: ElevatedButton(
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              Color(0xffFF6332),
+                                                        ),
+                                                        onPressed: () {
+                                                          albumName(
+                                                              data[index].name);
+                                                        },
+                                                        child: Text("Set"),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Text(
+                                                    "${data[index].name}",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
 
-                                                Navigator.pop(context);
-                                                print(
-                                                    "categoryList.last ${categoryList.length}");
-                                              },
-                                            ),
                                           ],
                                         );
-                                      },
-                                    );
-
-                                    setState(() {});
-                                  } else if (result == "shareAlbum") {
-                                    shareMultipleVideos();
-                                  } else if (result == "Download") {
-                                    downloadVideo('assets/videos/vid_3.mp4');
-                                  }
-                                },
-                                itemBuilder: (BuildContext context) {
-                                  return <PopupMenuEntry<String>>[
-                                    PopupMenuItem<String>(
-                                      value: 'deleteCategory',
-                                      child: Text('Delete'),
-                                    ),
-                                    PopupMenuItem<String>(
-                                      value: 'shareAlbum',
-                                      child: Text('Share Album'),
-                                    ),
-                                    PopupMenuItem<String>(
-                                      value: 'Download',
-                                      child: Text('Download'),
-                                    ),
-                                  ];
-                                },
+                                      } else {
+                                        return Image.asset(
+                                          'assets/images/placeholder.jpg',
+                                          fit: BoxFit.cover,
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ],
                               ),
-                            ),*/
-                          ],
-                        ),
+                            ),
+                          ),
+                          /*Align(
+                                  alignment: Alignment.topRight,
+                                  child: PopupMenuButton<String>(
+                                    icon: Padding(
+                                      padding: const EdgeInsets.only(
+                                          bottom: 12.0, left: 14),
+                                      child: Icon(Icons.more_horiz_rounded),
+                                    ),
+                                    onSelected: (result) {
+                                      if (result == "deleteCategory") {
+                                        showDialog(
+                                          context: context,
+                                          // Make sure this is the correct context
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: const Text('Warning!',
+                                                  style: TextStyle(
+                                                      color: Colors.red)),
+                                              content: const Text(
+                                                  'Do you really want to delete this Category!'),
+                                              actions: [
+                                                TextButton(
+                                                  child: Text('Cancel'),
+                                                  onPressed: () {
+                                                    Navigator.pop(
+                                                        context); // This closes the dialog
+                                                  },
+                                                ),
+                                                TextButton(
+                                                  child: Text('OK'),
+                                                  onPressed: () {
+                                                    // Perform the deletion here
+                                                    delete(data[index]);
+                                                    categoryList.remove(
+                                                        categoryList.last);
+
+                                                    // Close the dialog
+                                                    Navigator.pop(context);
+                                                    print(
+                                                        "categoryList.last ${categoryList.length}");
+                                                  },
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+
+                                        setState(() {});
+                                      } else if (result == "shareAlbum") {
+                                        shareMultipleVideos();
+                                      } else if (result == "Download") {
+                                        downloadVideo('assets/videos/vid_3.mp4');
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) {
+                                      return <PopupMenuEntry<String>>[
+                                        PopupMenuItem<String>(
+                                          value: 'deleteCategory',
+                                          child: Text('Delete'),
+                                        ),
+                                        PopupMenuItem<String>(
+                                          value: 'shareAlbum',
+                                          child: Text('Share Album'),
+                                        ),
+                                        PopupMenuItem<String>(
+                                          value: 'Download',
+                                          child: Text('Download'),
+                                        ),
+                                      ];
+                                    },
+                                  ),
+                                ),*/
+                        ],
                       ),
-                    ),
+                    )),
                   );
                 },
-              );
-            },
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: _openDialog,
-            child: Icon(Icons.add),
-          )),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
   void delete(Save save) async {
     print(save);
     await save.delete();
+
+    setState(() {});
 
     // Hive.box("SaveModel").clear();
   }

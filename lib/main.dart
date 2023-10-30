@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../home_page.dart';
 import 'database/save.dart';
 
@@ -19,16 +18,7 @@ void main() async {
   await Hive.openBox("InsideList");
 
   await Hive.openBox<Save>("saveCategories");
-  requestPermission();
   runApp(const MyApp());
-}
-
-Future<void> requestPermission() async {
-  final permission = Permission.systemAlertWindow;
-
-  if (await permission.isDenied) {
-    await permission.request();
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -37,10 +27,18 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final darkTheme = ThemeData.dark().copyWith(
+      // Customize the dark theme properties here
+      primaryColor: Colors.blue,
+    );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Video Album',
-      theme: ThemeData(),
+      theme: ThemeData(
+        fontFamily: "Montserrat",
+
+      ),
+      darkTheme: darkTheme,
       home: const HomePage(),
     );
   }

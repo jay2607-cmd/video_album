@@ -39,12 +39,12 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
     _videoPlayerController = VideoPlayerController.asset(widget.videoAssetPath);
     _chewieController = ChewieController(
       showControls: true,
-
+      aspectRatio: 9/16,
       allowFullScreen: true,
       videoPlayerController: _videoPlayerController,
       autoPlay: true,
       looping:
-      true, // You can set looping to false if you don't want the video to loop.
+          true, // You can set looping to false if you don't want the video to loop.
     );
   }
 
@@ -71,7 +71,6 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
 
   var channel = MethodChannel("nativeDemo");
 
-
   showToast() {
     channel.invokeMethod("showToast");
   }
@@ -87,7 +86,8 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
     try {
       // Generate a unique temporary file name for each video.
       final appDocumentsDirectory = await getApplicationDocumentsDirectory();
-      final tempVideoFile = File('${appDocumentsDirectory.path}/$tempVideoFileName');
+      final tempVideoFile =
+          File('${appDocumentsDirectory.path}/$tempVideoFileName');
 
       if (!tempVideoFile.existsSync() || assetVideoPath != tempVideoFileName) {
         // Clear cache and copy the new video asset to the temporary file.
@@ -98,7 +98,6 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
 
       // Check if the file exists before trying to delete it.
       if (tempVideoFile.existsSync()) {
-
         // activate the native side
         print("called from flutter");
         showToast();
@@ -106,7 +105,6 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
         // Use the path of the temporary video file to set the wallpaper.
         result = await AsyncWallpaper.setLiveWallpaper(
           filePath: tempVideoFile.path,
-
           goToHome: goToHome,
           toastDetails: ToastDetails.success(),
           errorToastDetails: ToastDetails.error(),
@@ -115,14 +113,14 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
             : 'Failed to set wallpaper.';
       } else {
         result = 'File not found.';
-        Fluttertoast.showToast(msg: "File Not Found",toastLength: Toast.LENGTH_SHORT);
-
-
+        Fluttertoast.showToast(
+            msg: "File Not Found", toastLength: Toast.LENGTH_SHORT);
       }
     } on PlatformException {
       result = 'Failed to set wallpaper.';
-      Fluttertoast.showToast(msg: "This Device Doesn't Support Live Wallpaper!",toastLength: Toast.LENGTH_SHORT);
-
+      Fluttertoast.showToast(
+          msg: "This Device Doesn't Support Live Wallpaper!",
+          toastLength: Toast.LENGTH_SHORT);
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -135,7 +133,6 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,12 +140,13 @@ class _AssetVideoPlayerState extends State<AssetVideoPlayer> {
         title: Text('Video Player'),
         actions: [
           IconButton(
-              onPressed: setLiveWallpaper,
-              icon: Icon(Icons.change_circle))
+              onPressed: setLiveWallpaper, icon: Icon(Icons.change_circle))
         ],
       ),
       body: Center(
-        child: Chewie(controller: _chewieController),
+        child: Chewie(
+          controller: _chewieController,
+        ),
       ),
     );
   }

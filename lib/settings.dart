@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_album/provider/db_provider.dart';
 
 class SettingScreen extends StatefulWidget {
@@ -35,7 +36,6 @@ class _SettingScreenState extends State<SettingScreen> {
         isDoubleTappedOn = value;
       });
     });
-
   }
 
   var channel = MethodChannel("nativeDemo");
@@ -48,15 +48,43 @@ class _SettingScreenState extends State<SettingScreen> {
 
   setMusic() {
     channel.invokeMethod("setMusic", {
-        "isUnMuted": isUnMuted,
+      "isUnMuted": isUnMuted,
     });
+  }
+
+  Future<void> requestPermission() async {
+    const permission = Permission.systemAlertWindow;
+
+    if (await permission.isDenied) {
+      await permission.request();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Text("Settings")),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: IconButton(
+              icon: Image.asset(
+                'assets/images/back.png',
+                height: 28,
+                width: 28,
+              ),
+              onPressed: () {},
+            ),
+          ),
+          title: const Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Text(
+              "Settings",
+            ),
+          ),
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -64,12 +92,12 @@ class _SettingScreenState extends State<SettingScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Container(
                   decoration: BoxDecoration(
-                      color: Color(0xffF0F1F5),
+                      color: Color(0xff372F2E),
+
                       borderRadius: BorderRadius.circular(15)),
                   child: ListTile(
                     title: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         "Allow Random Wallpaper",
                       ),
@@ -77,13 +105,12 @@ class _SettingScreenState extends State<SettingScreen> {
                     trailing: Transform.scale(
                       scale: 0.8,
                       child: Switch(
-                          activeColor: Color(0xff4F6DDC),
-                          activeTrackColor: Color(0xffDCE0ED),
+                          activeColor: Color(0xffFC5B33),
+                          activeTrackColor: Color(0xff857674),
                           inactiveThumbColor: Color(0xffA7B2C7),
                           inactiveTrackColor: Color(0xffDCE0ED),
                           value: isRandom,
                           onChanged: (bool value) async {
-
                             setRandom();
 
                             setState(() {
@@ -98,10 +125,11 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
                 child: Container(
                   decoration: BoxDecoration(
-                      color: Color(0xffF0F1F5),
+                      color: Color(0xff372F2E),
+
                       borderRadius: BorderRadius.circular(15)),
                   child: ListTile(
                     title: Padding(
@@ -114,10 +142,10 @@ class _SettingScreenState extends State<SettingScreen> {
                     trailing: Transform.scale(
                       scale: 0.8,
                       child: Switch(
-                        activeColor: Color(0xff4F6DDC),
-                        activeTrackColor: Color(0xffDCE0ED),
-                        inactiveTrackColor: Color(0xffDCE0ED),
+                        activeColor: Color(0xffFC5B33),
+                        activeTrackColor: Color(0xff857674),
                         inactiveThumbColor: Color(0xffA7B2C7),
+                        inactiveTrackColor: Color(0xffDCE0ED),
                         value: isUnMuted,
                         onChanged: (bool value) async {
                           setState(() {
@@ -125,7 +153,6 @@ class _SettingScreenState extends State<SettingScreen> {
                           });
                           DbProvider().saveUnMuteState(value);
                           setMusic();
-
                         },
                       ),
                     ),
@@ -136,7 +163,7 @@ class _SettingScreenState extends State<SettingScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Container(
                   decoration: BoxDecoration(
-                      color: Color(0xffF0F1F5),
+                      color: Color(0xff372F2E),
                       borderRadius: BorderRadius.circular(15)),
                   child: ListTile(
                     title: Padding(
@@ -149,22 +176,34 @@ class _SettingScreenState extends State<SettingScreen> {
                     trailing: Transform.scale(
                       scale: 0.8,
                       child: Switch(
-                          activeColor: Color(0xff4F6DDC),
-                          activeTrackColor: Color(0xffDCE0ED),
+                          activeColor: Color(0xffFC5B33),
+                          activeTrackColor: Color(0xff857674),
                           inactiveThumbColor: Color(0xffA7B2C7),
                           inactiveTrackColor: Color(0xffDCE0ED),
                           value: isDoubleTappedOn,
                           onChanged: (bool value) async {
-                            setState(() {
-                              isDoubleTappedOn = value;
-                            });
+                            if (!isDoubleTappedOn) {
+                              requestPermission();
+                            }
+
+                            const permission = Permission.systemAlertWindow;
+
+                            if (await permission.isGranted) {
+                              setState(() {
+                                isDoubleTappedOn = value;
+                              });
+                            } else {
+                              setState(() {
+                                isDoubleTappedOn = false;
+                              });
+                            }
+
                             DbProvider().saveDoubleTap(value);
                           }),
                     ),
                   ),
                 ),
               ),
-
             ],
           ),
         ),
